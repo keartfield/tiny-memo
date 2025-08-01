@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
+import Resizer from '../../../shared/ui/Resizer'
 import 'highlight.js/styles/github.css'
 import './MemoEditor.css'
 
@@ -22,6 +23,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
   const [editorMode, setEditorMode] = useState<EditorMode>('edit-preview')
   const [isDragOver, setIsDragOver] = useState(false)
   const [imageCache, setImageCache] = useState<Map<string, string>>(new Map())
+  const [editorWidth, setEditorWidth] = useState(50) // Percentage width of editor
   const editorRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -291,6 +293,18 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     }
   }
 
+  const handleResize = useCallback((delta: number) => {
+    if (!editorRef.current) return
+    
+    const containerWidth = editorRef.current.querySelector('.memo-editor-content')?.clientWidth || 800
+    const deltaPercentage = (delta / containerWidth) * 100
+    
+    setEditorWidth(prevWidth => {
+      const newWidth = Math.max(20, Math.min(80, prevWidth + deltaPercentage))
+      return newWidth
+    })
+  }, [])
+
   if (!memo) {
     return (
       <div className="memo-editor">
@@ -363,7 +377,10 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
         
         {editorMode === 'edit-preview' && (
           <>
-            <div className="memo-editor-input">
+            <div 
+              className="memo-editor-input resizable"
+              style={{ width: `${editorWidth}%` }}
+            >
               <textarea
                 ref={textareaRef}
                 className="memo-content-input"
@@ -371,9 +388,17 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
                 onChange={handleContentChange}
                 placeholder="A blank space for your thoughts..."
               />
+              <Resizer
+                direction="horizontal"
+                onResize={handleResize}
+              />
             </div>
             
-            <div className="memo-editor-preview" ref={previewRef}>
+            <div 
+              className="memo-editor-preview" 
+              ref={previewRef}
+              style={{ width: `${100 - editorWidth}%` }}
+            >
               <div className="markdown-preview" ref={markdownPreviewRef}>
                 {renderedMarkdown}
               </div>

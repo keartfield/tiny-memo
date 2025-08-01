@@ -94,6 +94,28 @@
   min-height: 0; /* Allow proper scrolling */
 }
 
+.memo-editor-input.resizable {
+  position: relative;
+  border-right: none; /* Remove border as resizer will handle visual separation */
+}
+
+/* Resizer styles for memo editor */
+.memo-editor-content .resizer {
+  background-color: var(--border-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.memo-editor-content .resizer:hover,
+.memo-editor-content.resizing .resizer {
+  opacity: 1;
+  background-color: var(--primary-accent);
+}
+
+.memo-editor-content.resizing {
+  user-select: none;
+}
+
 .memo-content-input {
   flex: 1;
   border: none;
@@ -136,6 +158,7 @@
   background-color: var(--bg-secondary);
   min-height: 0; /* Allow scrolling */
   flex-shrink: 0;
+  border-left: 1px solid var(--border-primary);
 }
 
 /* Custom scrollbar styles for memo preview */
@@ -331,6 +354,20 @@
 
 [data-theme="dark"] .memo-editor-input {
   border-right-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .memo-editor-preview {
+  border-left-color: var(--border-dark-primary);
+}
+
+/* Dark mode resizer styles */
+[data-theme="dark"] .memo-editor-content .resizer {
+  background-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .memo-editor-content .resizer:hover,
+[data-theme="dark"] .memo-editor-content.resizing .resizer {
+  background-color: var(--primary-accent);
 }
 
 [data-theme="dark"] .memo-content-input {

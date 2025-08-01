@@ -476,4 +476,154 @@ describe('MemoEditor', () => {
       expect(onMemoUpdate).not.toHaveBeenCalled()
     })
   })
+
+  describe('リサイザー機能', () => {
+    it('edit-previewモードでリサイザーが表示される', () => {
+      render(<MemoEditor {...mockProps} />)
+      
+      // 初期状態は edit-preview モード
+      expect(screen.getByTitle('Edit & Preview').classList.contains('active')).toBe(true)
+      
+      // リサイザーが存在することを確認
+      const resizer = document.querySelector('.resizer')
+      expect(resizer).toBeInTheDocument()
+    })
+
+    it('editモードではリサイザーが表示されない', async () => {
+      const user = userEvent.setup()
+      render(<MemoEditor {...mockProps} />)
+      
+      // Edit モードに切り替え
+      await user.click(screen.getByTitle('Edit'))
+      
+      // リサイザーが存在しないことを確認
+      const resizer = document.querySelector('.resizer')
+      expect(resizer).not.toBeInTheDocument()
+    })
+
+    it('previewモードではリサイザーが表示されない', async () => {
+      const user = userEvent.setup()
+      render(<MemoEditor {...mockProps} />)
+      
+      // Preview モードに切り替え
+      await user.click(screen.getByTitle('Preview'))
+      
+      // リサイザーが存在しないことを確認
+      const resizer = document.querySelector('.resizer')
+      expect(resizer).not.toBeInTheDocument()
+    })
+
+    it('リサイザーのドラッグで幅が変更される', () => {
+      const { container } = render(<MemoEditor {...mockProps} />)
+      
+      const resizer = container.querySelector('.resizer')
+      const editorInput = container.querySelector('.memo-editor-input.resizable')
+      const editorPreview = container.querySelector('.memo-editor-preview')
+      
+      expect(resizer).toBeInTheDocument()
+      expect(editorInput).toBeInTheDocument()
+      expect(editorPreview).toBeInTheDocument()
+      
+      // 初期状態の幅を確認（インラインスタイルが設定されている）
+      expect(editorInput).toHaveAttribute('style', 'width: 50%;')
+      expect(editorPreview).toHaveAttribute('style', 'width: 50%;')
+      
+      // ドラッグ開始をシミュレート
+      fireEvent.mouseDown(resizer!, { clientX: 400 })
+      
+      // ドラッグ移動をシミュレート（右に100px移動）
+      fireEvent.mouseMove(document, { clientX: 500 })
+      
+      // ドラッグ終了
+      fireEvent.mouseUp(document, { clientX: 500 })
+      
+      // 幅が変更されていることを確認（具体的な値は計算に依存するため、変更されたことを確認）
+      const newEditorWidth = editorInput!.getAttribute('style')
+      const newPreviewWidth = editorPreview!.getAttribute('style')
+      
+      expect(newEditorWidth).toContain('width:')
+      expect(newPreviewWidth).toContain('width:')
+      // 初期値と異なることを確認
+      expect(newEditorWidth).not.toBe('width: 50%;')
+      expect(newPreviewWidth).not.toBe('width: 50%;')
+    })
+
+    it('リサイザーの幅が20%未満にならない', () => {
+      const { container } = render(<MemoEditor {...mockProps} />)
+      
+      const resizer = container.querySelector('.resizer')
+      const editorInput = container.querySelector('.memo-editor-input.resizable')
+      
+      expect(resizer).toBeInTheDocument()
+      expect(editorInput).toBeInTheDocument()
+      
+      // ドラッグ開始
+      fireEvent.mouseDown(resizer!, { clientX: 400 })
+      
+      // 極端に左に移動（幅を20%未満にしようとする）
+      fireEvent.mouseMove(document, { clientX: 0 })
+      fireEvent.mouseUp(document, { clientX: 0 })
+      
+      // 幅が20%以上であることを確認
+      const editorWidth = editorInput!.getAttribute('style')
+      expect(editorWidth).toBeTruthy()
+      
+      // スタイルから数値を抽出して20%以上であることを確認
+      const widthMatch = editorWidth!.match(/width:\s*(\d+(?:\.\d+)?)%/)
+      if (widthMatch) {
+        const width = parseFloat(widthMatch[1])
+        expect(width).toBeGreaterThanOrEqual(20)
+      }
+    })
+
+    it('リサイザーの幅が80%を超えない', () => {
+      const { container } = render(<MemoEditor {...mockProps} />)
+      
+      const resizer = container.querySelector('.resizer')
+      const editorInput = container.querySelector('.memo-editor-input.resizable')
+      
+      expect(resizer).toBeInTheDocument()
+      expect(editorInput).toBeInTheDocument()
+      
+      // ドラッグ開始
+      fireEvent.mouseDown(resizer!, { clientX: 400 })
+      
+      // 極端に右に移動（幅を80%超にしようとする）
+      fireEvent.mouseMove(document, { clientX: 1200 })
+      fireEvent.mouseUp(document, { clientX: 1200 })
+      
+      // 幅が80%以下であることを確認
+      const editorWidth = editorInput!.getAttribute('style')
+      expect(editorWidth).toBeTruthy()
+      
+      // スタイルから数値を抽出して80%以下であることを確認
+      const widthMatch = editorWidth!.match(/width:\s*(\d+(?:\.\d+)?)%/)
+      if (widthMatch) {
+        const width = parseFloat(widthMatch[1])
+        expect(width).toBeLessThanOrEqual(80)
+      }
+    })
+
+    it('リサイザーにマウスが乗るとresizingクラスが追加される', () => {
+      const { container } = render(<MemoEditor {...mockProps} />)
+      
+      const resizer = container.querySelector('.resizer')
+      const resizerParent = resizer?.parentElement
+      
+      expect(resizer).toBeInTheDocument()
+      expect(resizerParent).toBeInTheDocument()
+      
+      // マウスエンター
+      fireEvent.mouseEnter(resizer!)
+      
+      // resizingクラスが追加されることを確認（リサイザーの親要素に追加される）
+      expect(resizerParent).toHaveClass('resizing')
+      
+      // マウスリーブ
+      fireEvent.mouseLeave(resizer!)
+      
+      // resizingクラスが削除されることを確認
+      expect(resizerParent).not.toHaveClass('resizing')
+    })
+  })
 })
