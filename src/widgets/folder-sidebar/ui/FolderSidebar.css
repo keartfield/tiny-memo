@@ -1,0 +1,259 @@
+/* Folder Sidebar */
+.folder-sidebar {
+  border-right: 0.5px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.folder-sidebar.resizing {
+  border-right: 0.5px solid var(--primary-accent);
+}
+
+.folder-sidebar-header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+.folder-sidebar-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.folder-add-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.folder-add-btn:hover {
+  background-color: var(--border-primary);
+}
+
+.folder-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Custom scrollbar styles for folder list */
+.folder-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.folder-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.folder-list::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.folder-list.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.folder-list.scrolling::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-primary);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.folder-item:last-child {
+  border-bottom: none;
+}
+
+.folder-item.drag-over {
+  background-color: var(--primary-accent-light);
+  border-left: 3px solid var(--primary-accent);
+}
+
+.folder-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  background-color: var(--bg-secondary);
+}
+
+.folder-item.drop-before {
+  border-top: 2px solid var(--primary-accent);
+  box-shadow: 0 -1px 0 0 var(--primary-accent);
+}
+
+.folder-item.drop-after {
+  border-bottom: 2px solid var(--primary-accent);
+  box-shadow: 0 1px 0 0 var(--primary-accent);
+}
+
+.folder-item:hover {
+  background-color: var(--hover-light);
+}
+
+.folder-item.selected {
+  background-color: var(--primary-accent);
+  color: white;
+}
+
+.folder-item.all-notes {
+  font-weight: 500;
+}
+
+.folder-item.all-notes.selected {
+  background-color: var(--primary-accent);
+}
+
+.folder-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.folder-name {
+  font-size: 14px;
+}
+
+.folder-count {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 8px;
+}
+
+.folder-item.selected .folder-count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.folder-delete-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.folder-item:hover .folder-delete-btn {
+  opacity: 1;
+}
+
+.folder-delete-btn:hover {
+  background-color: var(--hover-light);
+  color: var(--primary-danger);
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .folder-sidebar {
+  border-right-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .folder-sidebar.resizing {
+  border-right: 0.5px solid var(--primary-accent);
+}
+
+[data-theme="dark"] .folder-sidebar-header {
+  background-color: #161618;
+  border-bottom-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .folder-sidebar-title {
+  color: var(--text-dark-secondary);
+}
+
+[data-theme="dark"] .folder-add-btn {
+  color: var(--text-dark-secondary);
+}
+
+[data-theme="dark"] .folder-add-btn:hover {
+  background-color: #3a3a40;
+}
+
+[data-theme="dark"] .folder-item {
+  border-bottom-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .folder-item:hover {
+  background-color: var(--bg-dark-quaternary);
+}
+
+[data-theme="dark"] .folder-item.drag-over {
+  background-color: var(--primary-accent-medium);
+  border-left-color: var(--primary-accent);
+}
+
+[data-theme="dark"] .folder-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  background-color: var(--bg-dark-secondary);
+}
+
+[data-theme="dark"] .folder-item.drop-before {
+  border-top: 2px solid var(--primary-accent);
+  box-shadow: 0 -1px 0 0 var(--primary-accent);
+}
+
+[data-theme="dark"] .folder-item.drop-after {
+  border-bottom: 2px solid var(--primary-accent);
+  box-shadow: 0 1px 0 0 var(--primary-accent);
+}
+
+[data-theme="dark"] .folder-item.all-notes:hover {
+  background-color: var(--bg-dark-quaternary);
+}
+
+[data-theme="dark"] .folder-name {
+  color: var(--text-dark-primary);
+}
+
+[data-theme="dark"] .folder-count {
+  color: var(--text-dark-tertiary);
+}
+
+[data-theme="dark"] .folder-delete-btn {
+  color: var(--text-dark-tertiary);
+}
+
+[data-theme="dark"] .folder-delete-btn:hover {
+  background-color: #2a2a2f;
+  color: var(--primary-danger);
+}
+
+/* Dark mode scrollbar styles for folder list */
+[data-theme="dark"] .folder-list.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .folder-list.scrolling::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}

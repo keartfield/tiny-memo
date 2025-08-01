@@ -1,0 +1,2 @@
+/* App.css is now split into modular components */
+@import './shared/ui/styles/index.css';

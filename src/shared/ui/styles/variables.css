@@ -1,0 +1,90 @@
+/* Color constants - Husky inspired palette */
+:root {
+  /* Primary colors */
+  --primary-accent: #a8b1ff;
+  --primary-accent-hover: #9ca5ff;
+  --primary-danger: #de5b5b;
+  --primary-success: #10b981;
+  
+  /* Light mode colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-quaternary: #e2e8f0;
+  --bg-elevated: #ffffff;
+  
+  /* Light mode borders */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-tertiary: #94a3b8;
+  
+  /* Light mode text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --text-white: #ffffff;
+  
+  /* Light mode interactions */
+  --hover-light: #f1f5f9;
+  --hover-medium: #e2e8f0;
+  --primary-accent-light: rgba(168, 177, 255, 0.1);
+  --primary-accent-medium: rgba(168, 177, 255, 0.2);
+  
+  /* Code colors */
+  --code-bg: #f1f5f9;
+  --code-border: #cbd5e1;
+  --code-text: #475569;
+  
+  /* Dark mode code colors */
+  --code-dark-bg: #161b22;
+  --code-dark-border: #30363d;
+  --code-dark-text: #c9d1d9;
+  
+  /* Dark mode colors - Soft greyish black theme */
+  --bg-dark-primary: #1b1b1f;
+  --bg-dark-secondary: #161618;
+  --bg-dark-tertiary: #21262d;
+  --bg-dark-quaternary: #30363d;
+  --bg-dark-elevated: #1c2128;
+  
+  /* Dark mode borders */
+  --border-dark-primary: #2a2a2f;
+  --border-dark-secondary: #3a3a40;
+  --border-dark-tertiary: #4a4a50;
+  
+  /* Dark mode text */
+  --text-dark-primary: #f0f6fc;
+  --text-dark-secondary: #c9d1d9;
+  --text-dark-tertiary: #8b949e;
+  --text-dark-muted: #6e7681;
+  
+  /* Dark mode interactions */
+  --hover-dark-light: #2a2a2f;
+  --hover-dark-medium: #3a3a40;
+}
+
+/* Theme switching */
+[data-theme="dark"] {
+  --bg-primary: var(--bg-dark-primary);
+  --bg-secondary: var(--bg-dark-secondary);
+  --bg-tertiary: var(--bg-dark-tertiary);
+  --bg-quaternary: var(--bg-dark-quaternary);
+  --bg-elevated: var(--bg-dark-elevated);
+  
+  --border-primary: var(--border-dark-primary);
+  --border-secondary: var(--border-dark-secondary);
+  --border-tertiary: var(--border-dark-tertiary);
+  
+  --text-primary: var(--text-dark-primary);
+  --text-secondary: var(--text-dark-secondary);
+  --text-tertiary: var(--text-dark-tertiary);
+  --text-muted: var(--text-dark-muted);
+  
+  --hover-light: var(--hover-dark-light);
+  --hover-medium: var(--hover-dark-medium);
+  
+  --code-bg: var(--code-dark-bg);
+  --code-border: var(--code-dark-border);
+  --code-text: var(--code-dark-text);
+}

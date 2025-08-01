@@ -1,0 +1,4 @@
+/* Main styles entry point */
+@import './variables.css';
+@import './global.css';
+@import './responsive.css';

@@ -1,0 +1,227 @@
+/* Memo List */
+.memo-list {
+  background-color: var(--bg-primary);
+  border-right: 0.5px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 0.2s ease;
+  height: 100%;
+}
+
+.memo-list.resizing {
+  border-right: 0.5px solid var(--primary-accent);
+}
+
+.memo-list-header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+.memo-list-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.memo-add-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.memo-add-btn:hover {
+  background-color: var(--hover-light);
+}
+
+.memo-items {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Custom scrollbar styles */
+.memo-items::-webkit-scrollbar {
+  width: 3px;
+}
+
+.memo-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memo-items::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.memo-items.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.memo-items.scrolling::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.memo-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-primary);
+  position: relative;
+  transition: opacity 0.2s ease;
+}
+
+.memo-item:last-child {
+  border-bottom: none;
+}
+
+.memo-item:active {
+  opacity: 0.7;
+}
+
+.memo-item:hover {
+  background-color: var(--bg-quaternary);
+}
+
+.memo-item.selected {
+  background-color: var(--primary-accent-light);
+  border-left: 3px solid var(--primary-accent);
+}
+
+.memo-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.memo-preview {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.memo-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.memo-date {
+  flex: 1;
+}
+
+.memo-delete-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 14px;
+}
+
+.memo-item:hover .memo-delete-btn {
+  opacity: 1;
+}
+
+.memo-delete-btn:hover {
+  background-color: var(--hover-light);
+  color: var(--primary-danger);
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .memo-list {
+  background-color: #1b1b1f;
+  border-right-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .memo-list.resizing {
+  border-right: 0.5px solid var(--primary-accent);
+}
+
+[data-theme="dark"] .memo-list-header {
+  background-color: var(--bg-dark-secondary);
+  border-bottom-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .memo-list-title {
+  color: var(--text-dark-secondary);
+}
+
+[data-theme="dark"] .memo-add-btn {
+  color: var(--text-dark-secondary);
+}
+
+[data-theme="dark"] .memo-add-btn:hover {
+  background-color: #2a2a2f;
+}
+
+[data-theme="dark"] .memo-item {
+  border-bottom-color: var(--border-dark-primary);
+}
+
+[data-theme="dark"] .memo-item:hover {
+  background-color: var(--bg-dark-tertiary);
+}
+
+[data-theme="dark"] .memo-item.selected {
+  background-color: var(--primary-accent-medium);
+}
+
+[data-theme="dark"] .memo-title {
+  color: var(--text-dark-primary);
+}
+
+[data-theme="dark"] .memo-preview {
+  color: var(--text-dark-secondary);
+}
+
+[data-theme="dark"] .memo-date {
+  color: var(--text-dark-tertiary);
+}
+
+[data-theme="dark"] .memo-delete-btn {
+  color: var(--text-dark-tertiary);
+}
+
+[data-theme="dark"] .memo-delete-btn:hover {
+  background-color: #2a2a2f;
+  color: var(--primary-danger);
+}
+
+/* Dark mode scrollbar styles */
+[data-theme="dark"] .memo-items.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .memo-items.scrolling::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}

@@ -1,0 +1,94 @@
+/* Responsive Design */
+
+/* Step 1: Hide folder sidebar on medium screens (900px and below) */
+/* This applies regardless of viewMode setting */
+@media (max-width: 600px) {
+  /* Hide folder sidebar regardless of viewMode */
+  .folder-sidebar {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Hide resizer for folder sidebar */
+  .folder-sidebar + .resizer {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+  }
+  
+  /* Ensure memo list and editor fill remaining space */
+  .app-content {
+    display: flex !important;
+  }
+  
+  .memo-list {
+    flex-shrink: 0 !important;
+  }
+  
+  .memo-editor {
+    flex: 1 !important;
+  }
+}
+
+/* On larger screens, show folder sidebar only if viewMode allows it */
+@media (min-width: 600px) {
+  /* Folder sidebar is controlled by viewMode on larger screens */
+  .folder-sidebar {
+    display: flex; /* Default to flex, viewMode will control visibility */
+  }
+}
+
+/* Step 2: Hide memo list on smaller screens (700px and below) */
+@media (max-width: 400px) {
+  .memo-list {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Hide all resizers */
+  .resizer {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+  }
+  
+  /* Full width memo editor */
+  .memo-editor {
+    width: 100% !important;
+    flex: 1 !important;
+    box-shadow: none !important;
+    min-width: 100% !important;
+  }
+  
+  /* Adjust header for mobile */
+  .app-header {
+    padding: 0 12px !important;
+    justify-content: flex-end !important; /* Keep buttons right-aligned */
+  }
+  
+  /* Hide search bar when memo list is hidden to prevent overlap with window controls */
+  .search-bar {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+  }
+  
+  .header-controls {
+    gap: 8px !important;
+    justify-content: flex-end !important; /* Ensure buttons stay right-aligned */
+  }
+  
+  /* Ensure app content takes full width */
+  .app-content {
+    width: 100% !important;
+    display: flex !important;
+  }
+}
