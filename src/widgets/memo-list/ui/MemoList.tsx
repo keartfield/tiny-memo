@@ -20,7 +20,6 @@ const MemoList: React.FC<MemoListProps> = ({
   onMemoSelect,
   onMemoCreate,
   onMemoDelete,
-  onMemoFolderUpdate,
   selectedFolder,
   isSearching
 }) => {
@@ -84,7 +83,7 @@ const MemoList: React.FC<MemoListProps> = ({
   }
 
   const handleCreateMemo = () => {
-    const content = '# New Memo\n\nStart writing your memo here...'
+    const content = ''
     onMemoCreate(content)
   }
 
@@ -121,10 +120,10 @@ const MemoList: React.FC<MemoListProps> = ({
       <div className="memo-items" ref={memoItemsRef}>
         {memos.length === 0 ? (
           <div className="empty-state">
-            <p>No memos found</p>
+            <p>Nothing here (yet)</p>
             {!isSearching && (
               <p style={{ fontSize: '12px', marginTop: '8px', color: '#ccc' }}>
-                Click + to create your first memo
+                Press + to begin
               </p>
             )}
           </div>

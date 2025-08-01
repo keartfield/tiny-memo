@@ -89,7 +89,7 @@ describe('MemoList', () => {
     const addButton = screen.getByTitle('New Memo')
     await user.click(addButton)
     
-    expect(mockProps.onMemoCreate).toHaveBeenCalledWith('# New Memo\n\nStart writing your memo here...')
+    expect(mockProps.onMemoCreate).toHaveBeenCalledWith('')
   })
 
   it('削除ボタンをクリックして確認するとonMemoDeleteが呼ばれる', async () => {
@@ -148,15 +148,15 @@ describe('MemoList', () => {
   it('メモが空の場合、空の状態が表示される', () => {
     render(<MemoList {...mockProps} memos={[]} />)
     
-    expect(screen.getByText('No memos found')).toBeInTheDocument()
-    expect(screen.getByText('Click + to create your first memo')).toBeInTheDocument()
+    expect(screen.getByText('Nothing here (yet)')).toBeInTheDocument()
+    expect(screen.getByText('Press + to begin')).toBeInTheDocument()
   })
 
   it('検索中でメモが空の場合、作成ガイドが表示されない', () => {
     render(<MemoList {...mockProps} memos={[]} isSearching={true} />)
     
-    expect(screen.getByText('No memos found')).toBeInTheDocument()
-    expect(screen.queryByText('Click + to create your first memo')).not.toBeInTheDocument()
+    expect(screen.getByText('Nothing here (yet)')).toBeInTheDocument()
+    expect(screen.queryByText('Press + to begin')).not.toBeInTheDocument()
   })
 
   it('メモのプレビューテキストが正しく生成される', () => {

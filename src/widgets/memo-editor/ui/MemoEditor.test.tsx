@@ -17,12 +17,14 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'フォルダー1',
+    order: 0,
     createdAt: new Date(),
     updatedAt: new Date()
   },
   {
     id: '2',
     name: 'フォルダー2',
+    order: 1,
     createdAt: new Date(),
     updatedAt: new Date()
   }
@@ -71,14 +73,14 @@ describe('MemoEditor', () => {
   it('メモが選択されていない場合、空の状態を表示する', () => {
     render(<MemoEditor {...mockProps} memo={null} />)
     
-    expect(screen.getByText('Select a memo to start editing')).toBeInTheDocument()
+    expect(screen.getByText('tiny memo, big thoughts')).toBeInTheDocument()
   })
 
   it('メモが選択されている場合、編集画面を表示する', () => {
     render(<MemoEditor {...mockProps} />)
     
     // テキストエリアにメモの内容が表示されることを確認
-    const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+    const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
     expect(textarea).toHaveValue(mockMemo.content)
     
     // プレビューにタイトルが表示されることを確認
@@ -105,7 +107,7 @@ describe('MemoEditor', () => {
     const user = userEvent.setup()
     render(<MemoEditor {...mockProps} />)
     
-    const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+    const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
     await user.clear(textarea)
     await user.type(textarea, '新しい内容')
     
@@ -254,7 +256,7 @@ describe('MemoEditor', () => {
     
     render(<MemoEditor {...mockProps} memo={emptyMemo} />)
     
-    const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+    const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
     expect(textarea).toHaveValue('')
   })
 
@@ -348,7 +350,7 @@ describe('MemoEditor', () => {
     
     render(<MemoEditor {...errorProps} />)
     
-    const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+    const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
     await user.clear(textarea)
     await user.type(textarea, '新しい内容')
     
@@ -372,7 +374,7 @@ describe('MemoEditor', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // テキストを入力
       await user.clear(textarea)
@@ -396,7 +398,7 @@ describe('MemoEditor', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // テキストを入力
       await user.clear(textarea)
@@ -421,7 +423,7 @@ describe('MemoEditor', () => {
       
       const { rerender } = render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // テキストを入力
       await user.clear(textarea)
@@ -442,7 +444,7 @@ describe('MemoEditor', () => {
       rerender(<MemoEditor {...props} memo={newMemo} />)
       
       // 新しいメモの内容が表示されることを確認
-      const newTextarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const newTextarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       expect(newTextarea).toHaveValue('新しいメモ')
     })
 

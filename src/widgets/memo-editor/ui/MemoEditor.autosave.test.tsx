@@ -51,14 +51,14 @@ describe('MemoEditor - 自動保存テスト', () => {
   describe('基本表示', () => {
     it('メモが選択されていない場合は空の状態を表示', () => {
       render(<MemoEditor {...mockProps} memo={null} />)
-      expect(screen.getByText('Select a memo to start editing')).toBeInTheDocument()
+      expect(screen.getByText('tiny memo, big thoughts')).toBeInTheDocument()
     })
 
     it('メモが選択されている場合は編集画面を表示', () => {
       render(<MemoEditor {...mockProps} />)
       
       // テキストエリアが表示される
-      expect(screen.getByPlaceholderText('Start writing your memo here...')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('A blank space for your thoughts...')).toBeInTheDocument()
       
       // フォルダー選択が表示される
       expect(screen.getByDisplayValue('No Folder')).toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('MemoEditor - 自動保存テスト', () => {
       const user = userEvent.setup()
       render(<MemoEditor {...mockProps} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // テキストを変更
       await user.clear(textarea)
@@ -91,7 +91,7 @@ describe('MemoEditor - 自動保存テスト', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // 初期内容が表示される
       expect(textarea).toHaveValue('# テストメモ\n\nこれはテストの内容です。')
@@ -115,7 +115,7 @@ describe('MemoEditor - 自動保存テスト', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('Start writing your memo here...')
+      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
       
       // テキストを変更
       await user.clear(textarea)

@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
-import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import './MemoEditor.css'
 
 interface MemoEditorProps {
   memo: Memo | null
   folders: Folder[]
-  onMemoUpdate: (id: string, content: string) => void
+  onMemoUpdate: (id: string, content: string) => Promise<void>
   onMemoFolderUpdate: (id: string, folderId: string | null) => void
 }
 
@@ -18,7 +17,7 @@ type EditorMode = 'edit' | 'edit-preview' | 'preview'
 const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, onMemoFolderUpdate }) => {
   const [content, setContent] = useState('')
   const [isModified, setIsModified] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [_, setIsSaving] = useState(false)
   const [lastSavedContent, setLastSavedContent] = useState('')
   const [editorMode, setEditorMode] = useState<EditorMode>('edit-preview')
   const [isDragOver, setIsDragOver] = useState(false)
@@ -28,7 +27,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
   const previewRef = useRef<HTMLDivElement>(null)
   const markdownPreviewRef = useRef<HTMLDivElement>(null)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const onMemoUpdateRef = useRef(onMemoUpdate)
+  const onMemoUpdateRef = useRef<(id: string, content: string) => Promise<void>>(onMemoUpdate)
   
   // Update ref when onMemoUpdate changes
   useEffect(() => {
@@ -131,7 +130,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       // Save current content if there are unsaved changes
       if (savedMemoId && savedIsModified && savedContent !== savedLastSavedContent && savedContent.trim()) {
         // Use the ref to avoid dependency loops
-        onMemoUpdateRef.current(savedMemoId, savedContent).catch((error) => {
+        onMemoUpdateRef.current(savedMemoId, savedContent).catch((error: unknown) => {
           const errorMessage = error instanceof Error ? error.message : String(error)
           if (!errorMessage.includes('No record was found') && !errorMessage.includes('Record to update not found')) {
             console.error('Failed to save memo on unmount:', error)
@@ -155,7 +154,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
           await onMemoUpdateRef.current(currentMemoId, content)
           setLastSavedContent(content)
           setIsModified(false)
-        } catch (error) {
+        } catch (error: unknown) {
           // Check if the error is because the memo was deleted
           const errorMessage = error instanceof Error ? error.message : String(error)
           if (errorMessage.includes('No record was found') || errorMessage.includes('Record to update not found')) {
@@ -272,60 +271,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     }
   }, [imageCache])
 
-  // Memoized image component to prevent unnecessary re-renders
-  const ImageComponent = useMemo(() => {
-    return React.memo(({ filename, alt, ...props }: { filename: string, alt?: string, [key: string]: any }) => {
-      // Check cache immediately to determine initial state
-      const cachedSrc = imageCache.get(filename)
-      const [imageSrc, setImageSrc] = useState<string>(cachedSrc || '')
-      const [loading, setLoading] = useState(!cachedSrc)
-      
-      useEffect(() => {
-        // If already cached, no need to load
-        if (imageCache.has(filename)) {
-          const cached = imageCache.get(filename)!
-          setImageSrc(cached)
-          setLoading(false)
-          return
-        }
-        
-        const loadImage = async () => {
-          try {
-            const dataUrl = await getImageSrc(filename)
-            setImageSrc(dataUrl)
-          } catch (error) {
-            console.error('Error loading image:', error)
-          } finally {
-            setLoading(false)
-          }
-        }
-        
-        loadImage()
-      }, [filename])
-      
-      if (loading) {
-        return (
-          <span style={{ padding: '10px', background: '#f0f0f0', borderRadius: '4px', display: 'inline-block' }}>
-            Loading image: {alt}
-          </span>
-        )
-      }
-      
-      return imageSrc ? (
-        <img
-          {...props}
-          src={imageSrc}
-          alt={alt}
-          style={{ maxWidth: '100%', height: 'auto' }}
-        />
-      ) : (
-        <div style={{ padding: '10px', background: '#ffcccc', borderRadius: '4px' }}>
-          Failed to load image: {alt}
-        </div>
-      )
-    })
-  }, [getImageSrc, imageCache])
-
   // Memoized markdown renderer
   const renderedMarkdown = useMemo(() => {
     if (!content) return null
@@ -350,7 +295,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     return (
       <div className="memo-editor">
         <div className="memo-editor-empty">
-          Select a memo to start editing
+          tiny memo, big thoughts
         </div>
       </div>
     )
@@ -411,7 +356,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
               className="memo-content-input"
               value={content}
               onChange={handleContentChange}
-              placeholder="Start writing your memo here..."
+              placeholder="A blank space for your thoughts..."
             />
           </div>
         )}
@@ -424,7 +369,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
                 className="memo-content-input"
                 value={content}
                 onChange={handleContentChange}
-                placeholder="Start writing your memo here..."
+                placeholder="A blank space for your thoughts..."
               />
             </div>
             
