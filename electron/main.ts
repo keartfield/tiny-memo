@@ -129,6 +129,20 @@ app.whenReady().then(async () => {
   // Set application menu
   const template: Electron.MenuItemConstructorOptions[] = [
     {
+      label: 'tiny memo',
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    },
+    {
       label: 'Edit',
       submenu: [
         { role: 'undo' },
@@ -136,7 +150,9 @@ app.whenReady().then(async () => {
         { type: 'separator' },
         { role: 'cut' },
         { role: 'copy' },
-        { role: 'paste' }
+        { role: 'paste' },
+        { type: 'separator' },
+        { role: 'selectAll' }
       ]
     },
     {
@@ -151,6 +167,13 @@ app.whenReady().then(async () => {
         { role: 'zoomOut' },
         { type: 'separator' },
         { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'close' }
       ]
     }
   ]
@@ -300,8 +323,6 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    prisma?.$disconnect()
-    app.quit()
-  }
+  prisma?.$disconnect()
+  app.quit()
 })
