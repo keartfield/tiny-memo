@@ -10,6 +10,9 @@
     "dev:electron": "npm run build:electron && cross-env NODE_ENV=development electron .",
     "build": "npm run build:electron && vite build && electron-builder",
     "build:electron": "node electron/build.js",
+    "release": "npm run build:electron && vite build && electron-builder --publish=never",
+    "release:dark": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon.icns",
+    "release:light": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon-light.icns",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -58,5 +61,50 @@
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2"
+  },
+  "build": {
+    "appId": "com.tiny-memo.app",
+    "productName": "tiny memo",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "node_modules/**/*",
+      "prisma/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/@prisma/**/*",
+      "node_modules/.prisma/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "prisma",
+        "to": "prisma"
+      },
+      {
+        "from": "node_modules/.prisma",
+        "to": "node_modules/.prisma"
+      },
+      {
+        "from": "node_modules/@prisma",
+        "to": "node_modules/@prisma"
+      }
+    ],
+    "mac": {
+      "icon": "assets/icons/icon.icns",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64"]
+        },
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ]
+    }
   }
 }

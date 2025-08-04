@@ -5,15 +5,17 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const buildElectron = async () => {
+  const entryPoints = [
+    join(__dirname, 'main.ts'),
+    join(__dirname, 'preload.ts')
+  ]
+  
   await build({
-    entryPoints: [
-      join(__dirname, 'main.ts'),
-      join(__dirname, 'preload.ts')
-    ],
+    entryPoints,
     bundle: true,
     platform: 'node',
     target: 'node16',
-    external: ['electron', '@prisma/client'],
+    external: ['electron', '@prisma/client', '.prisma/client'],
     outdir: join(__dirname, '../dist-electron'),
     format: 'cjs',
     outExtension: { '.js': '.cjs' },

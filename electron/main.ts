@@ -1,8 +1,8 @@
 import { app, BrowserWindow, Menu, ipcMain, shell } from 'electron'
 import { join } from 'path'
-import { PrismaClient } from '@prisma/client'
 import { promises as fs } from 'fs'
 import { createHash } from 'crypto'
+import { PrismaClient } from '@prisma/client'
 
 const isDev = process.env.NODE_ENV === 'development'
 let mainWindow: BrowserWindow
@@ -10,7 +10,7 @@ let prisma: PrismaClient
 let imagesDir: string
 
 const createWindow = () => {
-  mainWindow = new BrowserWindow({
+  const windowOptions: any = {
     width: 1200,
     height: 800,
     minWidth: 300,
@@ -22,7 +22,19 @@ const createWindow = () => {
     },
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 20, y: 20 },
-  })
+  }
+
+  // Only set icon in development
+  if (isDev) {
+    try {
+      const iconPath = join(__dirname, '../assets/icons/icon.png')
+      windowOptions.icon = iconPath
+    } catch (error) {
+      console.log('Icon not found in development, using default')
+    }
+  }
+
+  mainWindow = new BrowserWindow(windowOptions)
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173')
@@ -33,12 +45,64 @@ const createWindow = () => {
 }
 
 app.whenReady().then(async () => {
-  // Initialize Prisma
-  prisma = new PrismaClient()
-  
-  // Setup images directory
+  // Setup user data directory structure
   const userDataPath = app.getPath('userData')
+  const dbPath = join(userDataPath, 'memo.db')
   imagesDir = join(userDataPath, 'images')
+  
+  // Set DATABASE_URL environment variable
+  process.env.DATABASE_URL = `file:${dbPath}`
+  console.log('Database path:', dbPath)
+  console.log('DATABASE_URL:', process.env.DATABASE_URL)
+  
+  // Initialize Prisma client
+  try {
+    console.log('Initializing Prisma client...')
+    prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: `file:${dbPath}`,
+        },
+      },
+    })
+    
+    await prisma.$connect()
+    console.log('Prisma connected successfully')
+    
+    // Enable foreign keys
+    await prisma.$executeRaw`PRAGMA foreign_keys = ON`
+    
+    // Create tables using raw SQL
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "folders" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `
+    
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "memos" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "content" TEXT NOT NULL,
+        "folderId" TEXT,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "memos_folderId_fkey" FOREIGN KEY ("folderId") REFERENCES "folders" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+      )
+    `
+    
+    console.log('Database tables initialized with Prisma')
+    
+    // Test query
+    const folderCount = await prisma.folder.count()
+    console.log('Database working correctly. Folder count:', folderCount)
+  } catch (error) {
+    console.error('Failed to initialize Prisma:', error)
+    throw error
+  }
   
   try {
     await fs.mkdir(imagesDir, { recursive: true })
@@ -46,6 +110,7 @@ app.whenReady().then(async () => {
   } catch (error) {
     console.error('Failed to create images directory:', error)
   }
+  
   
   createWindow()
   
@@ -85,6 +150,51 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
+  // Setup image handling (common to both Prisma and SQLite3)
+  ipcMain.handle('image:save', async (_, data: Uint8Array, filename: string) => {
+    try {
+      // Convert Uint8Array to Buffer
+      const buffer = Buffer.from(data)
+      
+      // Generate unique filename using hash
+      const hash = createHash('md5').update(buffer).digest('hex')
+      const ext = filename.split('.').pop() || 'png'
+      const uniqueFilename = `${hash}.${ext}`
+      const filePath = join(imagesDir, uniqueFilename)
+      
+      await fs.writeFile(filePath, buffer)
+      
+      console.log('Image saved:', filePath)
+      return uniqueFilename
+    } catch (error) {
+      console.error('Failed to save image:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('image:get', async (_, filename: string) => {
+    try {
+      const filePath = join(imagesDir, filename)
+      const buffer = await fs.readFile(filePath)
+      return buffer.toString('base64')
+    } catch (error) {
+      console.error('Failed to read image:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('image:delete', async (_, filename: string) => {
+    try {
+      const filePath = join(imagesDir, filename)
+      await fs.unlink(filePath)
+      console.log('Image deleted:', filePath)
+      return true
+    } catch (error) {
+      console.error('Failed to delete image:', error)
+      return false
+    }
+  })
+
   // IPC handlers for database operations
   ipcMain.handle('db:folders:getAll', async () => {
     return await prisma.folder.findMany({
@@ -115,25 +225,6 @@ app.whenReady().then(async () => {
       where: { id },
       data: { name }
     })
-  })
-
-  ipcMain.handle('db:folders:updateOrder', async (_, id: string, order: number) => {
-    return await prisma.folder.update({
-      where: { id },
-      data: { order }
-    })
-  })
-
-  ipcMain.handle('db:folders:reorderFolders', async (_, folderIds: string[]) => {
-    // Update each folder's order based on its position in the array
-    await prisma.$transaction(
-      folderIds.map((id, index) =>
-        prisma.folder.update({
-          where: { id },
-          data: { order: index }
-        })
-      )
-    )
   })
 
   ipcMain.handle('db:folders:delete', async (_, id: string) => {
@@ -189,52 +280,7 @@ app.whenReady().then(async () => {
     
     return manualResults
   })
-
-  // Image handling
-  ipcMain.handle('image:save', async (_, data: Uint8Array, filename: string) => {
-    try {
-      // Convert Uint8Array to Buffer
-      const buffer = Buffer.from(data)
-      
-      // Generate unique filename using hash
-      const hash = createHash('md5').update(buffer).digest('hex')
-      const ext = filename.split('.').pop() || 'png'
-      const uniqueFilename = `${hash}.${ext}`
-      const filePath = join(imagesDir, uniqueFilename)
-      
-      await fs.writeFile(filePath, buffer)
-      
-      console.log('Image saved:', filePath)
-      return uniqueFilename
-    } catch (error) {
-      console.error('Failed to save image:', error)
-      throw error
-    }
-  })
-
-  ipcMain.handle('image:get', async (_, filename: string) => {
-    try {
-      const filePath = join(imagesDir, filename)
-      const buffer = await fs.readFile(filePath)
-      return buffer.toString('base64')
-    } catch (error) {
-      console.error('Failed to read image:', error)
-      throw error
-    }
-  })
-
-  ipcMain.handle('image:delete', async (_, filename: string) => {
-    try {
-      const filePath = join(imagesDir, filename)
-      await fs.unlink(filePath)
-      console.log('Image deleted:', filePath)
-      return true
-    } catch (error) {
-      console.error('Failed to delete image:', error)
-      return false
-    }
-  })
-
+  
   // Handle external link opening
   ipcMain.on('open-external', (_, url: string) => {
     shell.openExternal(url)
