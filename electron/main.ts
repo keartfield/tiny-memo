@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, shell, nativeImage } from 'electron'
 import { join } from 'path'
 import { promises as fs } from 'fs'
 import { createHash } from 'crypto'
@@ -24,10 +24,11 @@ const createWindow = () => {
     trafficLightPosition: { x: 20, y: 20 },
   }
 
-  // Only set icon in development
+  // Set icon in development
   if (isDev) {
     try {
-      const iconPath = join(__dirname, '../assets/icons/icon.png')
+      const iconPath = join(process.cwd(), 'assets/icons/icon_dark_80_padded.png')
+      console.log('Development icon path:', iconPath)
       windowOptions.icon = iconPath
     } catch (error) {
       console.log('Icon not found in development, using default')
@@ -45,6 +46,17 @@ const createWindow = () => {
 }
 
 app.whenReady().then(async () => {
+  // Set dock icon for development
+  if (isDev && process.platform === 'darwin') {
+    try {
+      const iconPath = join(process.cwd(), 'assets/icons/icon_dark_80_padded.png')
+      const icon = nativeImage.createFromPath(iconPath)
+      app.dock.setIcon(icon)
+      console.log('Development dock icon set successfully')
+    } catch (error) {
+      console.log('Failed to set development dock icon:', error)
+    }
+  }
   // Setup user data directory structure
   const userDataPath = app.getPath('userData')
   const dbPath = join(userDataPath, 'memo.db')
