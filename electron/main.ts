@@ -59,7 +59,9 @@ app.whenReady().then(async () => {
   }
   // Setup user data directory structure
   const userDataPath = app.getPath('userData')
-  const dbPath = join(userDataPath, 'memo.db')
+  const dbPath = isDev 
+    ? join(process.cwd(), 'prisma', 'dev.db')
+    : join(userDataPath, 'memo.db')
   imagesDir = join(userDataPath, 'images')
   
   // Set DATABASE_URL environment variable
