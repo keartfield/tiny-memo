@@ -11,8 +11,8 @@
     "build": "npm run build:electron && vite build && electron-builder",
     "build:electron": "node electron/build.js",
     "release": "npm run build:electron && vite build && electron-builder --publish=never",
-    "release:dark": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon.icns",
-    "release:light": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon-light.icns",
+    "release:dark": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon.icns --config.mac.identity=null",
+    "release:light": "npm run build:electron && vite build && electron-builder --publish=never --config.mac.icon=assets/icons/icon-light.icns --config.mac.identity=null",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -98,13 +98,11 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64"]
-        },
-        {
-          "target": "dmg",
-          "arch": ["arm64"]
+          "arch": ["universal"]
         }
-      ]
+      ],
+      "mergeASARs": false,
+      "x64ArchFiles": "Contents/Resources/node_modules/{.prisma,@prisma}/**/*"
     }
   }
 }

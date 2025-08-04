@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  
+jobs:
+  release:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Build and release (Dark)
+        run: npm run release:dark
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          DISABLE_ESLINT_PLUGIN: true
+
+      - name: Sign macOS apps (Dark)
+        run: |
+          ls -la release/ || true
+          codesign --force --deep --sign - release/mac-universal/tiny\ memo.app || true
+          codesign -dv release/mac-universal/tiny\ memo.app || true
+
+      - name: Rename Dark DMG
+        run: |
+          mv "release/tiny memo-0.1.0-universal.dmg" "release/tiny.memo-dark-icon-0.1.0-universal.dmg"
+          mv "release/tiny memo-0.1.0-universal.dmg.blockmap" "release/tiny.memo-dark-icon-0.1.0-universal.dmg.blockmap"
+
+      - name: Build and release (Light)
+        run: npm run release:light
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          DISABLE_ESLINT_PLUGIN: true
+
+      - name: Sign macOS apps (Light)
+        run: |
+          ls -la release/ || true
+          codesign --force --deep --sign - release/mac-universal/tiny\ memo.app || true
+          codesign -dv release/mac-universal/tiny\ memo.app || true
+
+      - name: Rename Light DMG
+        run: |
+          mv "release/tiny memo-0.1.0-universal.dmg" "release/tiny.memo-light-icon-0.1.0-universal.dmg"
+          mv "release/tiny memo-0.1.0-universal.dmg.blockmap" "release/tiny.memo-light-icon-0.1.0-universal.dmg.blockmap"
+
+      - name: List release files
+        run: |
+          echo "Listing release directory:"
+          find release/ -name "*.dmg" -type f || true
+          ls -la release/*.dmg || true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*.dmg
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: release/*.dmg
