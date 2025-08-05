@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiny Memo - Markdown Editor</title>
+    <title>tiny memo</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="shortcut icon" href="favicon.png">
     <style>
         * {
             margin: 0;
@@ -12,7 +15,7 @@
         }
 
         body {
-            font-family: 'Georgia', serif;
+            font-family: "Family",Serif;
             line-height: 1.6;
             color: #333;
             background-color: #fff;
@@ -20,26 +23,26 @@
         }
 
         .container {
-            max-width: 680px;
+            max-width: 740px;
             margin: 0 auto;
             padding: 40px 20px;
+            color: #6e7681;
         }
 
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 70px;
-          margin-top: 50px;
+          margin-top: 30px;
+          margin-bottom: 60px;
         }
 
         h1 {
           display: flex;
           align-items: center;
-          font-size: 20px;
+          font-size: 16px;
           font-weight: normal;
           margin: 0;
-          color: #000;
         }
 
         .logo {
@@ -48,10 +51,13 @@
           margin-right: 10px;
         }
 
+        .content {
+          font-size: 18px;
+        }
+
         p {
             margin-bottom: 24px;
             line-height: 1.7;
-            color: #6e7681;
         }
 
         a {
@@ -72,14 +78,15 @@
         li {
             margin-bottom: 12px;
             position: relative;
-            padding-left: 20px;
+            padding-left: 28px;
         }
 
         li:before {
-            content: "•";
+            content: "—";
             position: absolute;
             left: 0;
             color: #333;
+            opacity: .5;
         }
 
         .products {
@@ -99,8 +106,9 @@
         }
 
         .signature {
-          font-size: 14px;
-          padding-top: 40px;
+            color: #6e7681;
+            font-size: 11px;
+            padding-top: 40px;
             padding-top: 40px;
             border-top: 1px solid #eee;
         }
@@ -118,14 +126,6 @@
             color: #0066cc;
             text-decoration: underline;
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-
         .theme-toggle {
             width: 32px;
             height: 32px;
@@ -165,7 +165,7 @@
             color: var(--text-primary);
         }
 
-        [data-theme="dark"] p {
+        [data-theme="dark"] .content {
             color: var(--text-secondary);
         }
 
@@ -175,6 +175,15 @@
 
         [data-theme="dark"] .signature {
             border-top: 1px solid var(--border-primary);
+        }
+
+        .signature a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .signature a:hover {
+            text-decoration: underline;
         }
 
         [data-theme="dark"] .theme-toggle {
@@ -199,21 +208,6 @@
         [data-theme="dark"] .screenshot {
             border-color: #2a2a2f;
         }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px 15px;
-            }
-
-            body {
-                font-size: 16px;
-            }
-
-            h1 {
-                font-size: 28px;
-                margin-bottom: 30px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -227,47 +221,34 @@
                 <span id="theme-icon">⚫︎</span>
             </button>
         </div>
+        <div class="content">
+          <p>Taking notes is about removing unnecessary thoughts.</p>
+          
+          <p>A <strong>tiny memo</strong> app for Mac. No complex toolbars, annoying features, or bloated interfaces. With the simple power of Markdown syntax, you can focus purely on writing and create beautifully formatted documents.</p>
 
-        <p>Taking notes is about removing unnecessary thoughts.</p>
-        
-        <p>A tiny memo app for Mac. No complex toolbars, annoying features, or bloated interfaces. With the simple power of Markdown syntax, you can focus purely on writing and create beautifully formatted documents.</p>
-        
-        <p>In our digital age, we're bombarded with feature-rich applications that promise to revolutionize how we work. But sometimes, what we really need is the opposite – a tool that strips away the noise and lets us focus on the essence of what we're trying to accomplish.</p>
-        <div class="screenshot-container">
-          <img id="theme-screenshot" src="./images/screenshot_light.png" alt="Tiny Memo Screenshot" class="screenshot">
+          <p>In our digital age, we're bombarded with feature-rich applications that promise to revolutionize how we work. But sometimes, what we really need is the opposite – a tool that strips away the noise and lets us focus on the essence of what we're trying to accomplish.</p>
+                    
+          <p>The beauty lies in what we've chosen to leave out. No overwhelming menus, no unnecessary animations, no feature creep that dilutes the core experience. Just you, your thoughts, and a canvas ready to receive them. The Markdown support ensures your formatting is both beautiful and portable, while the folder system keeps everything organized without getting in your way.</p>
+
+          <p><strong>tiny memo</strong> comes with only the most minimal features:</p>
+          <ul>
+              <li>Write memos in plain text</li>
+              <li>Plain text editing with rich Markdown preview</li>
+              <li>Search through your entire knowledge base instantly</li>
+              <li>Local storage for complete privacy and control</li>
+              <li>Switch between light and dark themes</li>
+          </ul>
+
+          <div class="screenshot-container">
+            <img id="theme-screenshot" src="./images/screenshot_light.png" alt="Tiny Memo Screenshot" class="screenshot">
+          </div>
+
+          <p>Your thoughts deserve better than to be buried under layers of unnecessary features. They deserve a space where they can breathe, grow, and transform into something meaningful. That space is <strong>tiny memo</strong>.</p>
+          
+          <p>Start writing today.</p>
         </div>
-        <p>Tiny Memo embraces this philosophy of intentional simplicity. It's designed for writers, thinkers, and creators who understand that the best ideas often emerge from clarity, not complexity. Whether you're capturing fleeting thoughts, drafting your next article, or organizing research notes, Tiny Memo provides a clean, distraction-free environment where your mind can wander and wonder.</p>
-        
-        <p>The beauty lies in what we've chosen to leave out. No overwhelming menus, no unnecessary animations, no feature creep that dilutes the core experience. Just you, your thoughts, and a canvas ready to receive them. The Markdown support ensures your formatting is both beautiful and portable, while the folder system keeps everything organized without getting in your way.</p>
-
-        <p><strong>Features</strong></p>
-        <ul>
-            <li>Create memos with instant responsiveness</li>
-            <li>Organize with intuitive folder structures</li>
-            <li>Search through your entire knowledge base instantly</li>
-            <li>Plain text editing with rich Markdown preview</li>
-            <li>Local storage for complete privacy and control</li>
-            <li>Lightweight design that never slows you down</li>
-        </ul>
-        
-        <p><strong>Themes</strong></p>
-        <ul>
-            <li>Light theme for daytime clarity</li>
-            <li>Dark theme for focused evening sessions</li>
-        </ul>
-        
-        <p>Every element of Tiny Memo has been carefully considered. The typography is chosen for readability during long writing sessions. The color palette reduces eye strain while maintaining clarity. The interface responds instantly to your actions, never breaking the flow of your thoughts.</p>
-        
-        <p>This isn't just another note-taking app – it's a philosophy made manifest. We believe that the tools we use shape how we think, and we want to shape that thinking toward clarity, focus, and creativity. Tiny Memo gets out of your way so your ideas can take center stage.</p>
-        
-        <p>The best tools are sometimes the simplest ones. Tiny Memo was developed based on the belief that great ideas deserve great tools - tools that don't get in the way and let you focus on what matters.</p>
-        
-        <p>Your thoughts deserve better than to be buried under layers of unnecessary features. They deserve a space where they can breathe, grow, and transform into something meaningful. That space is Tiny Memo.</p>
-        
-        <p>Start writing today.</p>
-        
         <div class="signature">
-          <p>© 2025 tiny memo</p>
+          <p>tiny memo is free and open source software. Copyright © 2025. Distributed under the MIT License. <a href="https://github.com/keartfield/tiny-memo/releases/tag/v0.1.0">Download the latest release</a> or <a href="https://ko-fi.com/keartfield">donate</a> to support development.</p>
         </div>
     </div>
     
