@@ -227,6 +227,18 @@
   color: var(--text-primary);
 }
 
+/* 全体的なワードラップ設定 - すべての子要素に適用 */
+.markdown-preview,
+.markdown-preview * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* コンテナ全体の最大幅制限 */
+.markdown-preview {
+  max-width: 100%;
+}
+
 .markdown-preview h1,
 .markdown-preview h2,
 .markdown-preview h3,
@@ -269,6 +281,7 @@
   border-radius: 6px;
   overflow-x: auto;
   margin: 1em 0;
+  white-space: pre-wrap;
 }
 
 .markdown-preview pre code {
@@ -320,6 +333,7 @@
 .markdown-preview td {
   border: 1px solid var(--code-border);
   padding: 6px 13px;
+  max-width: 200px;
 }
 
 .markdown-preview th {

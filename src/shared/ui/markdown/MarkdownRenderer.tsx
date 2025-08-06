@@ -42,7 +42,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const text = currentParagraph.join('\n')
       if (text.trim()) {
         elements.push(
-          <p key={elements.length} style={{ whiteSpace: 'pre-line', margin: '1em 0' }}>
+          <p key={elements.length} style={{ whiteSpace: 'pre-wrap', margin: '1em 0' }}>
             {renderInlineElements(text)}
           </p>
         )
