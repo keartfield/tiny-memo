@@ -268,6 +268,21 @@ app.whenReady().then(async () => {
     return await prisma.folder.delete({ where: { id } })
   })
 
+  ipcMain.handle('db:folders:reorderFolders', async (_, folderIds: string[]) => {
+    try {
+      // Update the order of each folder based on its position in the array
+      const updatePromises = folderIds.map((folderId, index) => 
+        prisma.folder.update({
+          where: { id: folderId },
+          data: { order: index }
+        })
+      )
+      await Promise.all(updatePromises)
+    } catch (error) {
+      throw error
+    }
+  })
+
   ipcMain.handle('db:memos:getByFolder', async (_, folderId: string | null) => {
     return await prisma.memo.findMany({
       where: { folderId },
