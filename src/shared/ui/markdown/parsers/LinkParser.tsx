@@ -11,27 +11,40 @@ export class LinkParser {
   static parseInline(text: string): LinkMatch[] {
     const matches: LinkMatch[] = []
     
-    // Markdown links [text](url)
+    // Markdown links [text](url) - exclude images that start with !
     const markdownRegex = /\[([^\]]+)\]\(([^)]+)\)/g
-    let match
+    let match: any
     while ((match = markdownRegex.exec(text)) !== null) {
-      matches.push({
-        text: match[1],
-        url: match[2],
-        startIndex: match.index,
-        endIndex: match.index + match[0].length - 1
-      })
+      // Check if the character before the match is '!' (image syntax)
+      const isImage = match.index > 0 && text[match.index - 1] === '!'
+      
+      if (!isImage) {
+        matches.push({
+          text: match[1],
+          url: match[2],
+          startIndex: match.index,
+          endIndex: match.index + match[0].length - 1
+        })
+      }
     }
 
-    // Plain URLs
-    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/g
+    // Plain URLs - exclude trailing punctuation
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\],]+)/g
     while ((match = urlRegex.exec(text)) !== null) {
       // Check if this URL is already part of a markdown link
       const isPartOfMarkdownLink = matches.some(existing => 
         match.index >= existing.startIndex && match.index <= existing.endIndex
       )
       
-      if (!isPartOfMarkdownLink) {
+      // Check if this URL is part of an image syntax by looking for ![...](url)
+      const isPartOfImage = (() => {
+        // Look backwards from the URL to find if it's part of an image
+        const beforeUrl = text.substring(0, match.index)
+        const imagePattern = /!\[[^\]]*\]\($/
+        return imagePattern.test(beforeUrl)
+      })()
+      
+      if (!isPartOfMarkdownLink && !isPartOfImage) {
         matches.push({
           text: match[1],
           url: match[1],

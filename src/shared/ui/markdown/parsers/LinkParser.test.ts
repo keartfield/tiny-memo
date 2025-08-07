@@ -146,5 +146,57 @@ describe('LinkParser', () => {
         endIndex: 67
       })
     })
+
+    it('should not parse markdown images as links', () => {
+      const text = 'Here is an image: ![Alt text](https://example.com/image.png)'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(0)
+    })
+
+    it('should parse regular links but ignore images in same text', () => {
+      const text = 'Check this [link](https://example.com) and this image ![Alt](https://example.com/img.png)'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        text: 'link',
+        url: 'https://example.com',
+        startIndex: 11,
+        endIndex: 37
+      })
+    })
+
+    it('should handle mixed content with images, links, and plain URLs', () => {
+      const text = 'Visit https://site.com, see ![image](https://img.com/pic.jpg), and check [docs](https://docs.com)'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({
+        text: 'https://site.com',
+        url: 'https://site.com',
+        startIndex: 6,
+        endIndex: 21
+      })
+      expect(result[1]).toEqual({
+        text: 'docs',
+        url: 'https://docs.com',
+        startIndex: 73,
+        endIndex: 96
+      })
+    })
+
+    it('should not parse image with exclamation mark at beginning of line', () => {
+      const text = '![This is an image](https://example.com/image.png)\n[This is a link](https://example.com)'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        text: 'This is a link',
+        url: 'https://example.com',
+        startIndex: 51,
+        endIndex: 87
+      })
+    })
   })
 })
