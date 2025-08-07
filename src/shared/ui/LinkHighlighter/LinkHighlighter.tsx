@@ -4,7 +4,7 @@ import './LinkHighlighter.css'
 
 interface LinkHighlighterProps {
   content: string
-  textareaRef: React.RefObject<HTMLTextAreaElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
   onLinkClick?: (url: string) => void
 }
 
