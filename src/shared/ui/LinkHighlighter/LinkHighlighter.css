@@ -1,0 +1,30 @@
+.link-highlighter-overlay {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+[data-theme="dark"] .link-highlight span {
+  color: #4fc3f7 !important;
+}
+
+[data-theme="dark"] .link-highlight span:hover {
+  color: #81d4fa !important;
+}
+
+.link-highlight {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  transition: all 0.2s ease;
+}
+
+.link-highlight:hover {
+  background-color: rgba(0, 122, 204, 0.1);
+}
+
+/* Dark mode */
+[data-theme="dark"] .link-highlight:hover {
+  background-color: rgba(79, 195, 247, 0.1);
+}

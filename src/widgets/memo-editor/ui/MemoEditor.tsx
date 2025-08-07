@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
+import { LinkHighlighter } from '../../../shared/ui/LinkHighlighter'
 import Resizer from '../../../shared/ui/Resizer'
 import 'highlight.js/styles/github.css'
 import './MemoEditor.css'
@@ -364,13 +365,17 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       
       <div className="memo-editor-content">
         {editorMode === 'edit' && (
-          <div className="memo-editor-input full-width">
+          <div className="memo-editor-input full-width" style={{ position: 'relative' }}>
             <textarea
               ref={textareaRef}
               className="memo-content-input"
               value={content}
               onChange={handleContentChange}
               placeholder="A blank space for your thoughts..."
+            />
+            <LinkHighlighter 
+              content={content}
+              textareaRef={textareaRef}
             />
           </div>
         )}
@@ -379,7 +384,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
           <>
             <div 
               className="memo-editor-input resizable"
-              style={{ width: `${editorWidth}%` }}
+              style={{ width: `${editorWidth}%`, position: 'relative' }}
             >
               <textarea
                 ref={textareaRef}
@@ -387,6 +392,10 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
                 value={content}
                 onChange={handleContentChange}
                 placeholder="A blank space for your thoughts..."
+              />
+              <LinkHighlighter 
+                content={content}
+                textareaRef={textareaRef}
               />
               <Resizer
                 direction="horizontal"

@@ -1,0 +1,1 @@
+export { LinkHighlighter } from './LinkHighlighter'

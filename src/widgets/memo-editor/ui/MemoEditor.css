@@ -128,6 +128,11 @@
   background-color: var(--bg-primary);
 }
 
+.memo-editor-input[style*="position: relative"] .memo-content-input {
+  color: transparent;
+  caret-color: var(--text-primary);
+}
+
 /* Custom scrollbar styles for memo input */
 .memo-content-input::-webkit-scrollbar {
   width: 3px;
@@ -389,6 +394,11 @@
   color: var(--text-dark-primary);
 }
 
+[data-theme="dark"] .memo-editor-input[style*="position: relative"] .memo-content-input {
+  color: transparent;
+  caret-color: var(--text-dark-primary);
+}
+
 [data-theme="dark"] .memo-content-input::placeholder {
   color: var(--text-dark-tertiary);
 }
@@ -471,6 +481,33 @@
 [data-theme="dark"] .markdown-preview pre code .hljs-built_in {
   background: none !important;
   background-color: transparent !important;
+}
+
+/* Link styles */
+.markdown-preview a {
+  color: #007acc !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.markdown-preview a:hover {
+  color: #005a9b !important;
+  background-color: rgba(0, 122, 204, 0.1) !important;
+}
+
+[data-theme="dark"] .markdown-preview a {
+  color: #4fc3f7 !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="dark"] .markdown-preview a:hover {
+  color: #81d4fa !important;
+  background-color: rgba(79, 195, 247, 0.1) !important;
 }
 
 /* Dark mode scrollbar styles for memo editor */
