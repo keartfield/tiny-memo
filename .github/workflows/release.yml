@@ -44,8 +44,9 @@ jobs:
 
       - name: Rename Dark DMG
         run: |
-          mv "release/tiny memo-0.1.0-universal.dmg" "release/tiny.memo-dark-icon-0.1.0-universal.dmg"
-          mv "release/tiny memo-0.1.0-universal.dmg.blockmap" "release/tiny.memo-dark-icon-0.1.0-universal.dmg.blockmap"
+          VERSION=$(node -p "require('./package.json').version")
+          mv "release/tiny memo-${VERSION}-universal.dmg" "release/tiny.memo-dark-icon-universal.dmg"
+          mv "release/tiny memo-${VERSION}-universal.dmg.blockmap" "release/tiny.memo-dark-icon-universal.dmg.blockmap"
 
       - name: Build and release (Light)
         run: npm run release:light
@@ -63,8 +64,9 @@ jobs:
 
       - name: Rename Light DMG
         run: |
-          mv "release/tiny memo-0.1.0-universal.dmg" "release/tiny.memo-light-icon-0.1.0-universal.dmg"
-          mv "release/tiny memo-0.1.0-universal.dmg.blockmap" "release/tiny.memo-light-icon-0.1.0-universal.dmg.blockmap"
+          VERSION=$(node -p "require('./package.json').version")
+          mv "release/tiny memo-${VERSION}-universal.dmg" "release/tiny.memo-light-icon-universal.dmg"
+          mv "release/tiny memo-${VERSION}-universal.dmg.blockmap" "release/tiny.memo-light-icon-universal.dmg.blockmap"
 
       - name: List release files
         run: |
