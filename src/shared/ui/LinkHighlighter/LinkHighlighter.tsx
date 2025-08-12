@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { LinkParser } from '../markdown/parsers/LinkParser'
 import './LinkHighlighter.css'
 
@@ -26,155 +26,195 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     lineIndex?: number
     lineText?: string
   }>>([])
+  
+  // カーソル位置を保持するためのref
+  const cursorPositionRef = useRef<{ start: number; end: number } | null>(null)
+  const isUpdatingRef = useRef(false)
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // デバウンスされたリンク位置更新関数
+  const debouncedUpdateLinks = useCallback(() => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current)
+    }
+    
+    updateTimeoutRef.current = setTimeout(() => {
+      updateLinkPositions()
+    }, 100) // 100msのデバウンス
+  }, [])
+
+  const updateLinkPositions = () => {
+    if (!textareaRef.current || !overlayRef.current) return
+
+    const textarea = textareaRef.current
+    
+    // カーソル位置を保存
+    if (!isUpdatingRef.current) {
+      cursorPositionRef.current = {
+        start: textarea.selectionStart,
+        end: textarea.selectionEnd
+      }
+    }
+
+    // For testing environment, skip complex DOM measurements
+    if (typeof window === 'undefined' || !window.ResizeObserver || !document.createRange) {
+      setLinks([])
+      return
+    }
+    
+    const linkMatches = LinkParser.parseInline(content)
+    
+    if (linkMatches.length === 0) {
+      setLinks([])
+      return
+    }
+
+    // Create a mirror div that exactly matches the textarea
+    const mirrorDiv = document.createElement('div')
+    const computedStyle = window.getComputedStyle(textarea)
+    
+    // Copy all textarea styles to mirror div
+    mirrorDiv.style.position = 'absolute'
+    mirrorDiv.style.visibility = 'hidden'
+    mirrorDiv.style.left = '-9999px'
+    mirrorDiv.style.top = '-9999px'
+    mirrorDiv.style.width = computedStyle.width
+    mirrorDiv.style.height = computedStyle.height
+    mirrorDiv.style.padding = computedStyle.padding
+    mirrorDiv.style.border = computedStyle.border
+    mirrorDiv.style.fontFamily = computedStyle.fontFamily
+    mirrorDiv.style.fontSize = computedStyle.fontSize
+    mirrorDiv.style.fontWeight = computedStyle.fontWeight
+    mirrorDiv.style.lineHeight = computedStyle.lineHeight
+    mirrorDiv.style.letterSpacing = computedStyle.letterSpacing
+    mirrorDiv.style.wordSpacing = computedStyle.wordSpacing
+    mirrorDiv.style.textTransform = computedStyle.textTransform
+    mirrorDiv.style.whiteSpace = 'pre-wrap'
+    mirrorDiv.style.wordWrap = 'break-word'
+    mirrorDiv.style.overflowWrap = 'break-word'
+    mirrorDiv.style.boxSizing = computedStyle.boxSizing
+    
+    document.body.appendChild(mirrorDiv)
+
+    const newLinks = linkMatches.flatMap(match => {
+      // Split content into before, link, and after
+      const beforeText = content.substring(0, match.startIndex)
+      const linkText = content.substring(match.startIndex, match.endIndex + 1)
+      
+      // Create structure: beforeSpan + linkSpan + afterSpan
+      mirrorDiv.innerHTML = ''
+      
+      if (beforeText) {
+        const beforeSpan = document.createElement('span')
+        beforeSpan.textContent = beforeText
+        mirrorDiv.appendChild(beforeSpan)
+      }
+      
+      const linkSpan = document.createElement('span')
+      linkSpan.textContent = linkText
+      mirrorDiv.appendChild(linkSpan)
+      
+      const afterText = content.substring(match.endIndex + 1)
+      if (afterText) {
+        const afterSpan = document.createElement('span')
+        afterSpan.textContent = afterText
+        mirrorDiv.appendChild(afterSpan)
+      }
+      
+      // Get all client rects for the link span (handles multi-line)
+      try {
+        const range = document.createRange()
+        const textNode = linkSpan.firstChild
+        if (!textNode) return []
+        
+        range.selectNodeContents(linkSpan)
+        const clientRects = range.getClientRects?.() || []
+        const mirrorRect = mirrorDiv.getBoundingClientRect()
+        
+        // Create a highlight for each line of the link
+        const highlights = []
+        let charIndex = 0
+        
+        for (let i = 0; i < clientRects.length; i++) {
+          const rect = clientRects[i]
+          
+          // Calculate the text for this line segment
+          const tempDiv = document.createElement('div')
+          tempDiv.style.cssText = mirrorDiv.style.cssText
+          tempDiv.style.position = 'absolute'
+          tempDiv.style.visibility = 'hidden'
+          tempDiv.style.width = `${rect.width}px`
+          tempDiv.style.height = `${rect.height}px`
+          document.body.appendChild(tempDiv)
+          
+          // Find how much text fits in this rect
+          let lineText = ''
+          let testText = linkText.substring(charIndex)
+          tempDiv.textContent = testText
+          
+          if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
+            lineText = testText
+            charIndex += lineText.length
+          } else {
+            // Binary search to find the right amount of text
+            let left = 0
+            let right = testText.length
+            while (left < right) {
+              const mid = Math.floor((left + right + 1) / 2)
+              tempDiv.textContent = testText.substring(0, mid)
+              if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
+                left = mid
+              } else {
+                right = mid - 1
+              }
+            }
+            lineText = testText.substring(0, left)
+            charIndex += lineText.length
+          }
+          
+          document.body.removeChild(tempDiv)
+          
+          highlights.push({
+            ...match,
+            top: rect.top - mirrorRect.top,
+            left: rect.left - mirrorRect.left,
+            width: rect.width,
+            height: rect.height,
+            lineIndex: i,
+            lineText
+          })
+        }
+        
+        return highlights
+      } catch (error) {
+        // Fallback for test environment
+        return []
+      }
+    })
+
+    document.body.removeChild(mirrorDiv)
+    setLinks(newLinks)
+    
+    // リンク位置更新後にカーソル位置を復元
+    if (cursorPositionRef.current && !isUpdatingRef.current) {
+      requestAnimationFrame(() => {
+        try {
+          textarea.setSelectionRange(
+            cursorPositionRef.current!.start,
+            cursorPositionRef.current!.end
+          )
+        } catch (error) {
+          // カーソル位置の復元に失敗した場合は無視
+        }
+      })
+    }
+  }
 
   useEffect(() => {
     if (!textareaRef.current || !overlayRef.current) return
 
     const textarea = textareaRef.current
     const overlay = overlayRef.current
-
-    const updateLinkPositions = () => {
-      // For testing environment, skip complex DOM measurements
-      if (typeof window === 'undefined' || !window.ResizeObserver || !document.createRange) {
-        setLinks([])
-        return
-      }
-      
-      const linkMatches = LinkParser.parseInline(content)
-      
-      if (linkMatches.length === 0) {
-        setLinks([])
-        return
-      }
-
-      // Create a mirror div that exactly matches the textarea
-      const mirrorDiv = document.createElement('div')
-      const computedStyle = window.getComputedStyle(textarea)
-      
-      // Copy all textarea styles to mirror div
-      mirrorDiv.style.position = 'absolute'
-      mirrorDiv.style.visibility = 'hidden'
-      mirrorDiv.style.left = '-9999px'
-      mirrorDiv.style.top = '-9999px'
-      mirrorDiv.style.width = computedStyle.width
-      mirrorDiv.style.height = computedStyle.height
-      mirrorDiv.style.padding = computedStyle.padding
-      mirrorDiv.style.border = computedStyle.border
-      mirrorDiv.style.fontFamily = computedStyle.fontFamily
-      mirrorDiv.style.fontSize = computedStyle.fontSize
-      mirrorDiv.style.fontWeight = computedStyle.fontWeight
-      mirrorDiv.style.lineHeight = computedStyle.lineHeight
-      mirrorDiv.style.letterSpacing = computedStyle.letterSpacing
-      mirrorDiv.style.wordSpacing = computedStyle.wordSpacing
-      mirrorDiv.style.textTransform = computedStyle.textTransform
-      mirrorDiv.style.whiteSpace = 'pre-wrap'
-      mirrorDiv.style.wordWrap = 'break-word'
-      mirrorDiv.style.overflowWrap = 'break-word'
-      mirrorDiv.style.boxSizing = computedStyle.boxSizing
-      
-      document.body.appendChild(mirrorDiv)
-
-      const newLinks = linkMatches.flatMap(match => {
-        // Split content into before, link, and after
-        const beforeText = content.substring(0, match.startIndex)
-        const linkText = content.substring(match.startIndex, match.endIndex + 1)
-        
-        // Create structure: beforeSpan + linkSpan + afterSpan
-        mirrorDiv.innerHTML = ''
-        
-        if (beforeText) {
-          const beforeSpan = document.createElement('span')
-          beforeSpan.textContent = beforeText
-          mirrorDiv.appendChild(beforeSpan)
-        }
-        
-        const linkSpan = document.createElement('span')
-        linkSpan.textContent = linkText
-        mirrorDiv.appendChild(linkSpan)
-        
-        const afterText = content.substring(match.endIndex + 1)
-        if (afterText) {
-          const afterSpan = document.createElement('span')
-          afterSpan.textContent = afterText
-          mirrorDiv.appendChild(afterSpan)
-        }
-        
-        // Get all client rects for the link span (handles multi-line)
-        try {
-          const range = document.createRange()
-          const textNode = linkSpan.firstChild
-          if (!textNode) return []
-          
-          range.selectNodeContents(linkSpan)
-          const clientRects = range.getClientRects?.() || []
-          const mirrorRect = mirrorDiv.getBoundingClientRect()
-          
-          // Create a highlight for each line of the link
-          const highlights = []
-          let charIndex = 0
-          
-          for (let i = 0; i < clientRects.length; i++) {
-            const rect = clientRects[i]
-            
-            // Calculate the text for this line segment
-            const tempDiv = document.createElement('div')
-            tempDiv.style.cssText = mirrorDiv.style.cssText
-            tempDiv.style.position = 'absolute'
-            tempDiv.style.visibility = 'hidden'
-            tempDiv.style.width = `${rect.width}px`
-            tempDiv.style.height = `${rect.height}px`
-            document.body.appendChild(tempDiv)
-            
-            // Find how much text fits in this rect
-            let lineText = ''
-            let testText = linkText.substring(charIndex)
-            tempDiv.textContent = testText
-            
-            if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
-              lineText = testText
-            } else {
-              // Binary search to find the right amount of text
-              let left = 0
-              let right = testText.length
-              while (left < right) {
-                const mid = Math.floor((left + right + 1) / 2)
-                tempDiv.textContent = testText.substring(0, mid)
-                if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
-                  left = mid
-                } else {
-                  right = mid - 1
-                }
-              }
-              lineText = testText.substring(0, left)
-            }
-            
-            document.body.removeChild(tempDiv)
-            
-            highlights.push({
-              ...match,
-              top: rect.top - mirrorRect.top,
-              left: rect.left - mirrorRect.left,
-              width: rect.width,
-              height: rect.height,
-              lineIndex: i,
-              lineText
-            })
-            
-            charIndex += lineText.length
-          }
-          
-          return highlights
-        } catch (error) {
-          // Fallback for test environment
-          return []
-        }
-      })
-
-      document.body.removeChild(mirrorDiv)
-      setLinks(newLinks)
-    }
-
-    updateLinkPositions()
 
     // スクロール同期
     const handleScroll = () => {
@@ -188,6 +228,18 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     const handleResize = () => {
       // リサイズ後に位置を再計算
       requestAnimationFrame(updateLinkPositions)
+    }
+
+    // テキスト入力時のカーソル位置保持
+    const handleInput = () => {
+      // カーソル位置を保存
+      cursorPositionRef.current = {
+        start: textarea.selectionStart,
+        end: textarea.selectionEnd
+      }
+      
+      // デバウンスされたリンク位置更新
+      debouncedUpdateLinks()
     }
 
     // MutationObserver for style changes (only in browser environment)
@@ -222,7 +274,7 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     }
 
     textarea.addEventListener('scroll', handleScroll)
-    textarea.addEventListener('input', updateLinkPositions)
+    textarea.addEventListener('input', handleInput)
     window.addEventListener('resize', handleResize)
 
     // Also listen for parent container resize
@@ -240,22 +292,35 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
       
       return () => {
         textarea.removeEventListener('scroll', handleScroll)
-        textarea.removeEventListener('input', updateLinkPositions)
+        textarea.removeEventListener('input', handleInput)
         window.removeEventListener('resize', handleResize)
         observer?.disconnect()
         resizeObserver?.disconnect()
         parentResizeObserver?.disconnect()
+        if (updateTimeoutRef.current) {
+          clearTimeout(updateTimeoutRef.current)
+        }
       }
     }
 
     return () => {
       textarea.removeEventListener('scroll', handleScroll)
-      textarea.removeEventListener('input', updateLinkPositions)
+      textarea.removeEventListener('input', handleInput)
       window.removeEventListener('resize', handleResize)
       observer?.disconnect()
       resizeObserver?.disconnect()
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current)
+      }
     }
-  }, [content, textareaRef])
+  }, [content, textareaRef, debouncedUpdateLinks])
+
+  // 初期化時にリンク位置を更新
+  useEffect(() => {
+    if (content) {
+      debouncedUpdateLinks()
+    }
+  }, [content, debouncedUpdateLinks])
 
   const handleLinkClick = (url: string, e: React.MouseEvent) => {
     e.preventDefault()
@@ -307,7 +372,7 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
             e.currentTarget.style.color = isDark ? '#4fc3f7' : '#007acc'
             e.currentTarget.style.backgroundColor = 'transparent'
-          }}
+        }}
           title={link.url}
         >
           {content.substring(link.startIndex, link.endIndex + 1)}
