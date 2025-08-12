@@ -517,16 +517,16 @@ describe('MemoEditor', () => {
       const { container } = render(<MemoEditor {...mockProps} />)
       
       const resizer = container.querySelector('.resizer')
-      const editorInput = container.querySelector('.memo-editor-input.resizable')
-      const editorPreview = container.querySelector('.memo-editor-preview')
+      const editorInput = container.querySelector('.memo-editor-input.resizable') as HTMLElement
+      const editorPreview = container.querySelector('.memo-editor-preview') as HTMLElement
       
       expect(resizer).toBeInTheDocument()
       expect(editorInput).toBeInTheDocument()
       expect(editorPreview).toBeInTheDocument()
       
       // 初期状態で幅が設定されていることを確認
-      expect((editorInput as HTMLElement)?.style.width).toBeTruthy()
-      expect((editorPreview as HTMLElement)?.style.width).toBeTruthy()
+      expect(editorInput?.style.width).toBeTruthy()
+      expect(editorPreview?.style.width).toBeTruthy()
       
       // ドラッグ開始をシミュレート
       fireEvent.mouseDown(resizer!, { clientX: 400 })
@@ -552,7 +552,7 @@ describe('MemoEditor', () => {
       const { container } = render(<MemoEditor {...mockProps} />)
       
       const resizer = container.querySelector('.resizer')
-      const editorInput = container.querySelector('.memo-editor-input.resizable')
+      const editorInput = container.querySelector('.memo-editor-input.resizable') as HTMLElement
       
       expect(resizer).toBeInTheDocument()
       expect(editorInput).toBeInTheDocument()
@@ -580,7 +580,7 @@ describe('MemoEditor', () => {
       const { container } = render(<MemoEditor {...mockProps} />)
       
       const resizer = container.querySelector('.resizer')
-      const editorInput = container.querySelector('.memo-editor-input.resizable')
+      const editorInput = container.querySelector('.memo-editor-input.resizable') as HTMLElement
       
       expect(resizer).toBeInTheDocument()
       expect(editorInput).toBeInTheDocument()
