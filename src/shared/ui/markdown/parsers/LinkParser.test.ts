@@ -198,5 +198,56 @@ describe('LinkParser', () => {
         endIndex: 87
       })
     })
+
+    it('should parse www URLs and add https prefix', () => {
+      const text = 'Visit www.example.com for more info.'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        text: 'www.example.com',
+        url: 'https://www.example.com',
+        startIndex: 6,
+        endIndex: 20
+      })
+    })
+
+    it('should parse ftp URLs correctly', () => {
+      const text = 'Download from ftp://files.example.com/data.zip'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({
+        text: 'ftp://files.example.com/data.zip',
+        url: 'ftp://files.example.com/data.zip',
+        startIndex: 14,
+        endIndex: 45
+      })
+    })
+
+    it('should handle mixed URL types in same text', () => {
+      const text = 'Visit https://secure.com, www.example.com, and ftp://ftp.server.com'
+      const result = LinkParser.parseInline(text)
+      
+      expect(result).toHaveLength(3)
+      expect(result[0]).toEqual({
+        text: 'https://secure.com',
+        url: 'https://secure.com',
+        startIndex: 6,
+        endIndex: 23
+      })
+      expect(result[1]).toEqual({
+        text: 'www.example.com',
+        url: 'https://www.example.com',
+        startIndex: 26,
+        endIndex: 40
+      })
+      expect(result[2]).toEqual({
+        text: 'ftp://ftp.server.com',
+        url: 'ftp://ftp.server.com',
+        startIndex: 47,
+        endIndex: 66
+      })
+    })
   })
 })

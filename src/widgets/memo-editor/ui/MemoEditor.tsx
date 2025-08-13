@@ -177,24 +177,10 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
   }, [currentMemoId, content, isModified, lastSavedContent]) // Stable dependencies only
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // カーソル位置を保存
-    const cursorStart = e.target.selectionStart
-    const cursorEnd = e.target.selectionEnd
-    
     setContent(e.target.value)
     setIsModified(true)
-    
-    // 次のレンダリングサイクルでカーソル位置を復元
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        try {
-          textareaRef.current.setSelectionRange(cursorStart, cursorEnd)
-        } catch (error) {
-          // カーソル位置の復元に失敗した場合は無視
-        }
-      }
-    })
   }
+
 
   const handleImagePaste = async (e: ClipboardEvent) => {
     if (!memo) return
@@ -380,7 +366,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       
       <div className="memo-editor-content">
         {editorMode === 'edit' && (
-          <div className="memo-editor-input full-width" style={{ position: 'relative' }}>
+          <div className="memo-editor-input full-width">
             <textarea
               ref={textareaRef}
               className="memo-content-input"
@@ -399,7 +385,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
           <>
             <div 
               className="memo-editor-input resizable"
-              style={{ width: `${editorWidth}%`, position: 'relative' }}
+              style={{ width: `${editorWidth}%` }}
             >
               <textarea
                 ref={textareaRef}

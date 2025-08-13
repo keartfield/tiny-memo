@@ -122,14 +122,35 @@
   outline: none;
   padding: 20px;
   font-size: 14px;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace;
   line-height: 1.6;
   resize: none;
   background-color: var(--bg-primary);
+  /* カーソル位置の計算を正確にするための設定 */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  tab-size: 2;
+  /* フォントのレンダリングを最適化 */
+  font-feature-settings: 'liga' 0, 'calt' 0;
+  text-rendering: optimizeLegibility;
+  /* テキストの表示を最適化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* カーソルの表示を最適化 */
+  caret-color: var(--text-primary);
 }
 
 .memo-editor-input[style*="position: relative"] .memo-content-input {
-  color: transparent;
+  /* LinkHighlighterが有効な場合のみテキストを透明にする */
+  /* color: transparent; */
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
+}
+
+/* LinkHighlighterが無効化されている場合のテキストエリア */
+.memo-editor-input:not([style*="position: relative"]) .memo-content-input {
+  color: var(--text-primary);
   caret-color: var(--text-primary);
 }
 
@@ -395,7 +416,9 @@
 }
 
 [data-theme="dark"] .memo-editor-input[style*="position: relative"] .memo-content-input {
-  color: transparent;
+  /* LinkHighlighterが有効な場合のみテキストを透明にする */
+  /* color: transparent; */
+  color: var(--text-dark-primary);
   caret-color: var(--text-dark-primary);
 }
 

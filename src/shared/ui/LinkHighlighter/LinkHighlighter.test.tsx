@@ -167,10 +167,10 @@ describe('LinkHighlighter', () => {
     expect(linkElements[1]).toHaveTextContent('https://github.com')
   })
 
-  it('should render normal text with default color', () => {
+  it('should render normal text with transparent color', () => {
     const { container } = renderWithTextarea('Normal text with [link](https://example.com) here.')
     
-    const normalTextElements = container.querySelectorAll('span[style*="color: var(--text-primary)"]')
+    const normalTextElements = container.querySelectorAll('span[style*="color: transparent"]')
     expect(normalTextElements.length).toBeGreaterThan(0)
     
     const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')

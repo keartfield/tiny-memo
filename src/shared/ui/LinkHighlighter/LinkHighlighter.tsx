@@ -27,35 +27,14 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     lineText?: string
   }>>([])
   
-  // カーソル位置を保持するためのref
-  const cursorPositionRef = useRef<{ start: number; end: number } | null>(null)
-  const isUpdatingRef = useRef(false)
+  // カーソル位置関連のrefを削除
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // デバウンスされたリンク位置更新関数
-  const debouncedUpdateLinks = useCallback(() => {
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current)
-    }
-    
-    updateTimeoutRef.current = setTimeout(() => {
-      updateLinkPositions()
-    }, 100) // 100msのデバウンス
-  }, [])
-
-  const updateLinkPositions = () => {
+  const updateLinkPositions = useCallback(() => {
     if (!textareaRef.current || !overlayRef.current) return
 
     const textarea = textareaRef.current
     
-    // カーソル位置を保存
-    if (!isUpdatingRef.current) {
-      cursorPositionRef.current = {
-        start: textarea.selectionStart,
-        end: textarea.selectionEnd
-      }
-    }
-
     // For testing environment, skip complex DOM measurements
     if (typeof window === 'undefined' || !window.ResizeObserver || !document.createRange) {
       setLinks([])
@@ -96,119 +75,61 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     
     document.body.appendChild(mirrorDiv)
 
-    const newLinks = linkMatches.flatMap(match => {
-      // Split content into before, link, and after
-      const beforeText = content.substring(0, match.startIndex)
-      const linkText = content.substring(match.startIndex, match.endIndex + 1)
+    // Set the full content in the mirror div once
+    mirrorDiv.textContent = content
+    
+    const newLinks = linkMatches.map(match => {
+      // Create a range for the link text
+      const range = document.createRange()
+      const textNode = mirrorDiv.firstChild
       
-      // Create structure: beforeSpan + linkSpan + afterSpan
-      mirrorDiv.innerHTML = ''
+      if (!textNode) return null
       
-      if (beforeText) {
-        const beforeSpan = document.createElement('span')
-        beforeSpan.textContent = beforeText
-        mirrorDiv.appendChild(beforeSpan)
-      }
-      
-      const linkSpan = document.createElement('span')
-      linkSpan.textContent = linkText
-      mirrorDiv.appendChild(linkSpan)
-      
-      const afterText = content.substring(match.endIndex + 1)
-      if (afterText) {
-        const afterSpan = document.createElement('span')
-        afterSpan.textContent = afterText
-        mirrorDiv.appendChild(afterSpan)
-      }
-      
-      // Get all client rects for the link span (handles multi-line)
       try {
-        const range = document.createRange()
-        const textNode = linkSpan.firstChild
-        if (!textNode) return []
+        range.setStart(textNode, match.startIndex)
+        range.setEnd(textNode, match.endIndex)
         
-        range.selectNodeContents(linkSpan)
-        const clientRects = range.getClientRects?.() || []
-        const mirrorRect = mirrorDiv.getBoundingClientRect()
+        const rect = range.getBoundingClientRect()
         
-        // Create a highlight for each line of the link
-        const highlights = []
-        let charIndex = 0
+        if (rect.width === 0 || rect.height === 0) return null
         
-        for (let i = 0; i < clientRects.length; i++) {
-          const rect = clientRects[i]
-          
-          // Calculate the text for this line segment
-          const tempDiv = document.createElement('div')
-          tempDiv.style.cssText = mirrorDiv.style.cssText
-          tempDiv.style.position = 'absolute'
-          tempDiv.style.visibility = 'hidden'
-          tempDiv.style.width = `${rect.width}px`
-          tempDiv.style.height = `${rect.height}px`
-          document.body.appendChild(tempDiv)
-          
-          // Find how much text fits in this rect
-          let lineText = ''
-          let testText = linkText.substring(charIndex)
-          tempDiv.textContent = testText
-          
-          if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
-            lineText = testText
-            charIndex += lineText.length
-          } else {
-            // Binary search to find the right amount of text
-            let left = 0
-            let right = testText.length
-            while (left < right) {
-              const mid = Math.floor((left + right + 1) / 2)
-              tempDiv.textContent = testText.substring(0, mid)
-              if (tempDiv.getBoundingClientRect().width <= rect.width + 1) {
-                left = mid
-              } else {
-                right = mid - 1
-              }
-            }
-            lineText = testText.substring(0, left)
-            charIndex += lineText.length
-          }
-          
-          document.body.removeChild(tempDiv)
-          
-          highlights.push({
-            ...match,
-            top: rect.top - mirrorRect.top,
-            left: rect.left - mirrorRect.left,
-            width: rect.width,
-            height: rect.height,
-            lineIndex: i,
-            lineText
-          })
+        return {
+          text: content.substring(match.startIndex, match.endIndex),
+          url: match.url,
+          startIndex: match.startIndex,
+          endIndex: match.endIndex,
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height
         }
-        
-        return highlights
       } catch (error) {
-        // Fallback for test environment
-        return []
+        console.warn('Error creating range for link:', error)
+        return null
       }
-    })
-
-    document.body.removeChild(mirrorDiv)
+    }).filter(link => link !== null)
+    
+    // Clean up mirror div once after all calculations
+    try {
+      document.body.removeChild(mirrorDiv)
+    } catch (error) {
+      console.warn('Error removing mirror div:', error)
+    }
+    
     setLinks(newLinks)
     
-    // リンク位置更新後にカーソル位置を復元
-    if (cursorPositionRef.current && !isUpdatingRef.current) {
-      requestAnimationFrame(() => {
-        try {
-          textarea.setSelectionRange(
-            cursorPositionRef.current!.start,
-            cursorPositionRef.current!.end
-          )
-        } catch (error) {
-          // カーソル位置の復元に失敗した場合は無視
-        }
-      })
+  }, [content])
+
+  // デバウンスされたリンク位置更新関数
+  const debouncedUpdateLinks = useCallback(() => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current)
     }
-  }
+    
+    updateTimeoutRef.current = setTimeout(() => {
+      updateLinkPositions()
+    }, 100) // 100msのデバウンス
+  }, [updateLinkPositions])
 
   useEffect(() => {
     if (!textareaRef.current || !overlayRef.current) return
@@ -230,96 +151,88 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
       requestAnimationFrame(updateLinkPositions)
     }
 
-    // テキスト入力時のカーソル位置保持
+    // テキスト入力時のリンク位置更新
     const handleInput = () => {
-      // カーソル位置を保存
-      cursorPositionRef.current = {
-        start: textarea.selectionStart,
-        end: textarea.selectionEnd
-      }
-      
       // デバウンスされたリンク位置更新
       debouncedUpdateLinks()
     }
 
-    // MutationObserver for style changes (only in browser environment)
-    let observer: MutationObserver | null = null
-    if (typeof window !== 'undefined' && window.MutationObserver) {
-      observer = new MutationObserver(() => {
-        if (typeof requestAnimationFrame !== 'undefined') {
-          requestAnimationFrame(updateLinkPositions)
-        } else {
-          updateLinkPositions()
-        }
-      })
+    // MutationObserver for style changes (only in browser environment) - 無効化
+    // let observer: MutationObserver | null = null
+    // if (typeof window !== 'undefined' && window.MutationObserver) {
+    //   observer = new MutationObserver(() => {
+    //     if (typeof requestAnimationFrame !== 'undefined') {
+    //       requestAnimationFrame(updateLinkPositions)
+    //     } else {
+    //       updateLinkPositions()
+    //     }
+    //   })
 
-      observer.observe(textarea, {
-        attributes: true,
-        attributeFilter: ['style', 'class']
-      })
-    }
+    //   observer.observe(textarea, {
+    //     attributes: true,
+    //     attributeFilter: ['style', 'class']
+    //   })
+    // }
 
-    // ResizeObserver for textarea size changes (only in browser environment)
-    let resizeObserver: ResizeObserver | null = null
-    if (typeof window !== 'undefined' && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver(() => {
-        if (typeof requestAnimationFrame !== 'undefined') {
-          requestAnimationFrame(updateLinkPositions)
-        } else {
-          updateLinkPositions()
-        }
-      })
+    // ResizeObserver for textarea size changes (only in browser environment) - 無効化
+    // let resizeObserver: ResizeObserver | null = null
+    // if (typeof window !== 'undefined' && window.ResizeObserver) {
+    //   resizeObserver = new ResizeObserver(() => {
+    //     if (typeof requestAnimationFrame !== 'undefined') {
+    //       requestAnimationFrame(updateLinkPositions)
+    //     } else {
+    //       updateLinkPositions()
+    //     }
+    //   })
 
-      resizeObserver.observe(textarea)
-    }
+    //   resizeObserver.observe(textarea)
+    // }
 
     textarea.addEventListener('scroll', handleScroll)
     textarea.addEventListener('input', handleInput)
     window.addEventListener('resize', handleResize)
 
-    // Also listen for parent container resize
-    const parentElement = textarea.parentElement
-    let parentResizeObserver: ResizeObserver | null = null
-    if (parentElement && typeof window !== 'undefined' && window.ResizeObserver) {
-      parentResizeObserver = new ResizeObserver(() => {
-        if (typeof requestAnimationFrame !== 'undefined') {
-          requestAnimationFrame(updateLinkPositions)
-        } else {
-          updateLinkPositions()
-        }
-      })
-      parentResizeObserver.observe(parentElement)
+    // Also listen for parent container resize - 無効化
+    // const parentElement = textarea.parentElement
+    // let parentResizeObserver: ResizeObserver | null = null
+    // if (parentElement && typeof window !== 'undefined' && window.ResizeObserver) {
+    //   parentResizeObserver = new ResizeObserver(() => {
+    //     if (typeof requestAnimationFrame !== 'undefined') {
+    //       requestAnimationFrame(updateLinkPositions)
+    //     } else {
+    //       updateLinkPositions()
+    //     }
+    //   })
+    //   parentResizeObserver.observe(parentElement)
       
-      return () => {
-        textarea.removeEventListener('scroll', handleScroll)
-        textarea.removeEventListener('input', handleInput)
-        window.removeEventListener('resize', handleResize)
-        observer?.disconnect()
-        resizeObserver?.disconnect()
-        parentResizeObserver?.disconnect()
-        if (updateTimeoutRef.current) {
-          clearTimeout(updateTimeoutRef.current)
-        }
-      }
-    }
+    //   return () => {
+    //     textarea.removeEventListener('scroll', handleScroll)
+    //     // textarea.removeEventListener('input', handleInput) // テキスト入力時のリンク位置更新を無効化
+    //     window.removeEventListener('resize', handleResize)
+    //     // observer?.disconnect() // 無効化
+    //     // resizeObserver?.disconnect() // 無効化
+    //     parentResizeObserver?.disconnect()
+    //     if (updateTimeoutRef.current) {
+    //       clearTimeout(updateTimeoutRef.current)
+    //     }
+    //   }
+    // }
 
     return () => {
       textarea.removeEventListener('scroll', handleScroll)
       textarea.removeEventListener('input', handleInput)
       window.removeEventListener('resize', handleResize)
-      observer?.disconnect()
-      resizeObserver?.disconnect()
+      // observer?.disconnect() // 無効化
+      // resizeObserver?.disconnect() // 無効化
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current)
       }
     }
-  }, [content, textareaRef, debouncedUpdateLinks])
+  }, [debouncedUpdateLinks])
 
-  // 初期化時にリンク位置を更新
+  // contentが変更されたときにリンク位置を更新
   useEffect(() => {
-    if (content) {
-      debouncedUpdateLinks()
-    }
+    debouncedUpdateLinks()
   }, [content, debouncedUpdateLinks])
 
   const handleLinkClick = (url: string, e: React.MouseEvent) => {
@@ -336,17 +249,17 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
 
     const linkMatches = LinkParser.parseInline(content)
     if (linkMatches.length === 0) {
-      return <span style={{ color: 'var(--text-primary)' }}>{content}</span>
+      return <span style={{ color: 'transparent', userSelect: 'none' }}>{content}</span>
     }
 
     const parts = []
     let lastIndex = 0
 
     linkMatches.forEach((link, index) => {
-      // Add text before link
+      // Add invisible text before link to maintain layout
       if (link.startIndex > lastIndex) {
         parts.push(
-          <span key={`text-${lastIndex}`} style={{ color: 'var(--text-primary)' }}>
+          <span key={`text-${lastIndex}`} style={{ color: 'transparent', userSelect: 'none' }}>
             {content.substring(lastIndex, link.startIndex)}
           </span>
         )
@@ -382,10 +295,10 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
       lastIndex = link.endIndex + 1
     })
 
-    // Add remaining text
+    // Add remaining invisible text
     if (lastIndex < content.length) {
       parts.push(
-        <span key={`text-${lastIndex}`} style={{ color: 'var(--text-primary)' }}>
+        <span key={`text-${lastIndex}`} style={{ color: 'transparent', userSelect: 'none' }}>
           {content.substring(lastIndex)}
         </span>
       )
@@ -410,12 +323,20 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         fontSize: textareaRef.current ? window.getComputedStyle(textareaRef.current).fontSize : 'inherit',
         lineHeight: textareaRef.current ? window.getComputedStyle(textareaRef.current).lineHeight : 'inherit',
         padding: textareaRef.current ? window.getComputedStyle(textareaRef.current).padding : '0',
+        border: textareaRef.current ? window.getComputedStyle(textareaRef.current).border : 'none',
+        boxSizing: textareaRef.current ? window.getComputedStyle(textareaRef.current).boxSizing : 'border-box',
         whiteSpace: 'pre-wrap',
         wordWrap: 'break-word',
-        overflowWrap: 'break-word'
+        overflowWrap: 'break-word',
+        color: 'transparent' // Hide original text, only show links
       }}
     >
-      <div style={{ pointerEvents: 'none' }}>
+      <div style={{ 
+        pointerEvents: 'none',
+        position: 'relative',
+        height: '100%',
+        width: '100%'
+      }}>
         {renderContentWithLinks()}
       </div>
     </div>

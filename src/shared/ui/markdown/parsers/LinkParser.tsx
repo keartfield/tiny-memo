@@ -28,8 +28,8 @@ export class LinkParser {
       }
     }
 
-    // Plain URLs - exclude trailing punctuation
-    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\],]+)/g
+    // Plain URLs - more comprehensive regex including various TLDs and protocols
+    const urlRegex = /((?:https?:\/\/|www\.|ftp:\/\/)[^\s<>"{}|\\^`[\],]+)/g
     while ((match = urlRegex.exec(text)) !== null) {
       // Check if this URL is already part of a markdown link
       const isPartOfMarkdownLink = matches.some(existing => 
@@ -45,9 +45,15 @@ export class LinkParser {
       })()
       
       if (!isPartOfMarkdownLink && !isPartOfImage) {
+        let url = match[1]
+        // Add https:// prefix for www. URLs
+        if (url.startsWith('www.')) {
+          url = 'https://' + url
+        }
+        
         matches.push({
           text: match[1],
-          url: match[1],
+          url: url,
           startIndex: match.index,
           endIndex: match.index + match[0].length - 1
         })
