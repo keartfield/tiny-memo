@@ -50,6 +50,7 @@
 .memo-editor-input.full-width {
   width: 100%;
   border-right: none;
+  position: relative; /* For LinkHighlighter positioning */
 }
 
 .memo-editor-preview.full-width {
@@ -92,6 +93,7 @@
   flex-direction: column;
   border-right: 1px solid var(--border-primary);
   min-height: 0; /* Allow proper scrolling */
+  position: relative; /* For LinkHighlighter positioning */
 }
 
 .memo-editor-input.resizable {
