@@ -44,9 +44,17 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
 
     const textarea = textareaRef.current
 
-    // スクロール同期
+    // スクロール同期（requestAnimationFrameで最適化）
     const handleScroll = () => {
-      updateOverlay()
+      if (!overlayRef.current) return
+      
+      requestAnimationFrame(() => {
+        if (!overlayRef.current) return
+        const overlay = overlayRef.current
+        // スクロール位置を完全に同期
+        overlay.scrollTop = textarea.scrollTop
+        overlay.scrollLeft = textarea.scrollLeft
+      })
     }
 
     // リサイズ対応
@@ -59,9 +67,12 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
       debouncedUpdateOverlay()
     }
 
-    textarea.addEventListener('scroll', handleScroll)
+    textarea.addEventListener('scroll', handleScroll, { passive: true })
     textarea.addEventListener('input', handleInput)
     window.addEventListener('resize', handleResize)
+
+    // 初期スクロール位置を同期
+    handleScroll()
 
     return () => {
       textarea.removeEventListener('scroll', handleScroll)
@@ -163,7 +174,9 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         right: 0,
         bottom: 0,
         pointerEvents: 'none',
-        overflow: 'hidden',
+        overflow: 'auto',
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE/Edge
         fontFamily: computedStyle?.fontFamily || 'inherit',
         fontSize: computedStyle?.fontSize || 'inherit',
         fontWeight: computedStyle?.fontWeight || 'inherit',
