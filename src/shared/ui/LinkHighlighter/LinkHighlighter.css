@@ -1,60 +1,68 @@
-/* オーバーレイ要素のベーススタイル */
-.url-highlight-overlay {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-all;
-  max-width: 100%;
-  max-height: 100%;
-  /* M2 Mac対応: スクロール同期を優先 */
-  overflow: auto;
-  /* フレックスレイアウトを防ぐ */
-  flex-shrink: 1;
-  /* M2 Mac向けレンダリング最適化 */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* ハードウェアアクセラレーション */
-  will-change: scroll-position;
-  transform: translateZ(0);
+/* LinkHighlighter v2 - CSS Backdrop Approach */
+.link-highlighter-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* スクロールバーを非表示 */
-.url-highlight-overlay::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
-}
 
-/* 透明テキスト（URLではない部分） */
-.text-transparent {
-  color: transparent;
-  user-select: none;
-}
-
-/* URLテキストのスタイル */
-.url-text {
-  color: #007acc;
-  text-decoration: underline;
-  cursor: pointer;
+/* リンクハイライト */
+.link-highlight {
+  position: absolute;
   pointer-events: auto;
-  transition: all 0.2s ease;
-  /* 長いURLを適切に改行 */
-  word-break: break-all;
-  overflow-wrap: break-word;
-  hyphens: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+  
+  /* CSS Backdrop Filter Approach */
+  background: rgba(0, 122, 204, 0.1);
+  border: 1px solid rgba(0, 122, 204, 0.3);
+  
+  /* Alternative: Box Shadow Approach */
+  /* box-shadow: 
+    0 0 0 1px rgba(0, 122, 204, 0.3),
+    inset 0 0 0 100px rgba(0, 122, 204, 0.1); */
+    
+  /* M2 Mac Optimization */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-.url-text:hover {
-  color: #005a9b;
-  background-color: rgba(0, 122, 204, 0.1);
+.link-highlight:hover {
+  background: rgba(0, 122, 204, 0.2);
+  border-color: rgba(0, 122, 204, 0.5);
+  transform: translateZ(0) scale(1.02);
+}
+
+.link-highlight:active {
+  background: rgba(0, 122, 204, 0.3);
+  transform: translateZ(0) scale(0.98);
 }
 
 /* ダークモード対応 */
-[data-theme="dark"] .url-text {
-  color: #4fc3f7;
+[data-theme="dark"] .link-highlight {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: rgba(79, 195, 247, 0.3);
 }
 
-[data-theme="dark"] .url-text:hover {
-  color: #81d4fa;
-  background-color: rgba(79, 195, 247, 0.1);
+[data-theme="dark"] .link-highlight:hover {
+  background: rgba(79, 195, 247, 0.2);
+  border-color: rgba(79, 195, 247, 0.5);
+}
+
+[data-theme="dark"] .link-highlight:active {
+  background: rgba(79, 195, 247, 0.3);
+}
+
+/* 高DPI対応 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .link-highlight {
+    border-width: 0.5px;
+  }
 }

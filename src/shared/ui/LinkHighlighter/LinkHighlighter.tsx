@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { LinkParser } from '../markdown/parsers/LinkParser'
 import './LinkHighlighter.css'
 
@@ -8,106 +8,199 @@ interface LinkHighlighterProps {
   onLinkClick?: (url: string) => void
 }
 
+interface LinkPosition {
+  url: string
+  x: number
+  y: number
+  width: number
+  height: number
+  startIndex: number
+  endIndex: number
+}
+
 export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
   content,
   textareaRef,
   onLinkClick
 }) => {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [linkPositions, setLinkPositions] = useState<LinkPosition[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // スクロール同期関数（M2 Mac対応）
-  const syncScrollPosition = useCallback(() => {
-    if (!textareaRef.current || !overlayRef.current) return
+  // Range API を使った精密な位置計算（M2 Mac対応）
+  const calculateLinkPositions = useCallback(() => {
+    if (!textareaRef.current) return
+
+    const linkMatches = LinkParser.parseInline(content)
     
+    if (linkMatches.length === 0) {
+      setLinkPositions([])
+      return
+    }
+
     const textarea = textareaRef.current
-    const overlay = overlayRef.current
-    
-    // M2 Macでの高精度同期のため、直接値を設定
+    const textareaRect = textarea.getBoundingClientRect()
     const scrollTop = textarea.scrollTop
     const scrollLeft = textarea.scrollLeft
     
-    if (overlay.scrollTop !== scrollTop) {
-      overlay.scrollTop = scrollTop
-    }
-    if (overlay.scrollLeft !== scrollLeft) {
-      overlay.scrollLeft = scrollLeft
-    }
-  }, [])
-
-  // M2 Mac向けの高頻度更新関数
-  const immediateUpdate = useCallback(() => {
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current)
+    // 隠しdivを作成してテキストの正確な位置を測定
+    const measureDiv = document.createElement('div')
+    const computedStyle = window.getComputedStyle(textarea)
+    
+    // テキストエリアのスタイルを完全コピー
+    measureDiv.style.cssText = `
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: ${textarea.clientWidth}px;
+      height: ${textarea.clientHeight}px;
+      font-family: ${computedStyle.fontFamily};
+      font-size: ${computedStyle.fontSize};
+      font-weight: ${computedStyle.fontWeight};
+      line-height: ${computedStyle.lineHeight};
+      letter-spacing: ${computedStyle.letterSpacing};
+      word-spacing: ${computedStyle.wordSpacing};
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-all;
+      padding: ${computedStyle.padding};
+      border: ${computedStyle.border};
+      box-sizing: ${computedStyle.boxSizing};
+      tab-size: ${computedStyle.tabSize};
+      text-indent: ${computedStyle.textIndent};
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
+    `
+    
+    document.body.appendChild(measureDiv)
+    measureDiv.textContent = content
+    
+    const newLinkPositions: LinkPosition[] = []
+    
+    try {
+      linkMatches.forEach((link) => {
+        // Range APIを使用して正確な位置を取得
+        if (document.createRange && window.getSelection) {
+          const range = document.createRange()
+          const textNode = measureDiv.firstChild
+          
+          if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+            // リンクの開始位置から終了位置までの範囲を設定
+            range.setStart(textNode, link.startIndex)
+            range.setEnd(textNode, link.endIndex + 1)
+            
+            // Range の境界矩形を取得
+            const rangeBounds = range.getBoundingClientRect()
+            const measureBounds = measureDiv.getBoundingClientRect()
+            
+            // textarea内での相対位置を計算
+            const x = rangeBounds.left - measureBounds.left - scrollLeft
+            const y = rangeBounds.top - measureBounds.top - scrollTop
+            
+            newLinkPositions.push({
+              url: link.url,
+              x: Math.max(0, x),
+              y: Math.max(0, y),
+              width: Math.max(10, rangeBounds.width), // 最小幅を保証
+              height: Math.max(16, rangeBounds.height), // 最小高さを保証
+              startIndex: link.startIndex,
+              endIndex: link.endIndex
+            })
+          }
+        }
+      })
+    } catch (error) {
+      console.warn('Range API failed, using fallback positioning:', error)
+      // フォールバック：シンプルな計算
+      linkMatches.forEach((link) => {
+        const beforeText = content.substring(0, link.startIndex)
+        const linkText = content.substring(link.startIndex, link.endIndex + 1)
+        const lines = beforeText.split('\n')
+        const lineIndex = lines.length - 1
+        const lineHeight = parseFloat(computedStyle.lineHeight) || 20
+        const charWidth = 8.5
+        
+        newLinkPositions.push({
+          url: link.url,
+          x: Math.max(0, (lines[lineIndex]?.length || 0) * charWidth - scrollLeft),
+          y: Math.max(0, lineIndex * lineHeight - scrollTop),
+          width: linkText.length * charWidth,
+          height: lineHeight,
+          startIndex: link.startIndex,
+          endIndex: link.endIndex
+        })
+      })
+    } finally {
+      // 測定用divを削除
+      document.body.removeChild(measureDiv)
     }
     
-    // M2 Macでは即座に同期
-    syncScrollPosition()
-    
-    // 追加の安定化のため8ms後にも再同期
-    updateTimeoutRef.current = setTimeout(() => {
-      syncScrollPosition()
-    }, 8)
-  }, [syncScrollPosition])
+    setLinkPositions(newLinkPositions)
+  }, [content])
 
+  // スクロールとリサイズの監視（高頻度更新対応）
   useEffect(() => {
-    if (!textareaRef.current || !overlayRef.current) return
+    if (!textareaRef.current) return
 
     const textarea = textareaRef.current
-    const overlay = overlayRef.current
+    let animationFrame: number | null = null
+    let updateTimeout: NodeJS.Timeout | null = null
 
-    // M2 Mac対応スクロールハンドラー
-    const handleScroll = () => {
-      // 即座に同期（M2 Macの高DPI対応）
-      if (overlayRef.current && textareaRef.current) {
-        const scrollTop = textareaRef.current.scrollTop
-        const scrollLeft = textareaRef.current.scrollLeft
-        
-        overlayRef.current.scrollTop = scrollTop
-        overlayRef.current.scrollLeft = scrollLeft
+    const handleUpdate = () => {
+      // 既存のアニメーションフレームをキャンセル
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame)
       }
       
-      // 追加の安定化フレーム
-      requestAnimationFrame(() => {
-        if (overlayRef.current && textareaRef.current) {
-          overlayRef.current.scrollTop = textareaRef.current.scrollTop
-          overlayRef.current.scrollLeft = textareaRef.current.scrollLeft
-        }
+      // 新しいフレームで更新をスケジュール
+      animationFrame = requestAnimationFrame(() => {
+        calculateLinkPositions()
+        animationFrame = null
       })
     }
 
-    // リサイズハンドラー
-    const handleResize = () => {
-      immediateUpdate()
+    const handleScroll = () => {
+      // スクロール時は即座に更新
+      handleUpdate()
     }
-
-    // テキスト変更ハンドラー
+    
     const handleInput = () => {
-      immediateUpdate()
+      // 入力時は少し遅延させて更新
+      if (updateTimeout) {
+        clearTimeout(updateTimeout)
+      }
+      updateTimeout = setTimeout(() => {
+        handleUpdate()
+        updateTimeout = null
+      }, 50)
     }
 
-    // イベントリスナーを追加
+    // イベントリスナー
     textarea.addEventListener('scroll', handleScroll, { passive: true })
     textarea.addEventListener('input', handleInput)
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleUpdate)
 
-    // 初期同期
-    syncScrollPosition()
+    // 初期計算
+    calculateLinkPositions()
 
     return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame)
+      }
+      if (updateTimeout) {
+        clearTimeout(updateTimeout)
+      }
       textarea.removeEventListener('scroll', handleScroll)
       textarea.removeEventListener('input', handleInput)
-      window.removeEventListener('resize', handleResize)
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current)
-      }
+      window.removeEventListener('resize', handleUpdate)
     }
-  }, [syncScrollPosition, immediateUpdate])
+  }, [calculateLinkPositions])
 
-  // コンテンツ変更時の同期
+  // コンテンツ変更時の再計算
   useEffect(() => {
-    syncScrollPosition()
-  }, [content, syncScrollPosition])
+    calculateLinkPositions()
+  }, [content, calculateLinkPositions])
 
   // リンククリックハンドラー
   const handleLinkClick = (url: string, e: React.MouseEvent) => {
@@ -119,100 +212,23 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     }
   }
 
-  // URLを含むコンテンツをレンダリング
-  const renderContentWithUrls = () => {
-    if (!content) return null
-
-    const linkMatches = LinkParser.parseInline(content)
-    if (linkMatches.length === 0) {
-      // URLがない場合は透明テキストを表示
-      return (
-        <span className="text-transparent">
-          {content}
-        </span>
-      )
-    }
-
-    const parts = []
-    let lastIndex = 0
-
-    linkMatches.forEach((link, index) => {
-      // URL前のテキスト（透明）
-      if (link.startIndex > lastIndex) {
-        parts.push(
-          <span key={`text-${lastIndex}`} className="text-transparent">
-            {content.substring(lastIndex, link.startIndex)}
-          </span>
-        )
-      }
-
-      // URLテキスト（色付き、クリッカブル）
-      parts.push(
-        <span
-          key={`link-${index}`}
-          className="url-text"
+  return (
+    <div ref={containerRef} className="link-highlighter-container">
+      {/* リンクオーバーレイ */}
+      {linkPositions.map((link, index) => (
+        <div
+          key={`${link.startIndex}-${index}`}
+          className="link-highlight"
+          style={{
+            left: `${link.x}px`,
+            top: `${link.y}px`,
+            width: `${link.width}px`,
+            height: `${link.height}px`,
+          }}
           onClick={(e) => handleLinkClick(link.url, e)}
           title={link.url}
-        >
-          {content.substring(link.startIndex, link.endIndex + 1)}
-        </span>
-      )
-
-      lastIndex = link.endIndex + 1
-    })
-
-    // 残りのテキスト（透明）
-    if (lastIndex < content.length) {
-      parts.push(
-        <span key={`text-${lastIndex}`} className="text-transparent">
-          {content.substring(lastIndex)}
-        </span>
-      )
-    }
-
-    return parts
-  }
-
-  // textareaのスタイルを取得
-  const computedStyle = textareaRef.current ? window.getComputedStyle(textareaRef.current) : null
-
-  return (
-    <div 
-      ref={overlayRef}
-      className="url-highlight-overlay"
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pointerEvents: 'none',
-        overflow: 'auto',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        fontFamily: computedStyle?.fontFamily || 'inherit',
-        fontSize: computedStyle?.fontSize || 'inherit',
-        fontWeight: computedStyle?.fontWeight || 'inherit',
-        lineHeight: computedStyle?.lineHeight || 'inherit',
-        letterSpacing: computedStyle?.letterSpacing || 'inherit',
-        wordSpacing: computedStyle?.wordSpacing || 'inherit',
-        padding: computedStyle?.padding || '0',
-        borderWidth: computedStyle?.borderWidth || '0',
-        borderStyle: 'solid',
-        borderColor: 'transparent',
-        boxSizing: computedStyle?.boxSizing || 'border-box',
-        margin: computedStyle?.margin || '0',
-        whiteSpace: 'pre-wrap',
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        wordBreak: 'break-all',
-        background: 'transparent',
-        // コンテナの幅を超えないように制限
-        maxWidth: '100%',
-        minWidth: 0
-      }}
-    >
-      {renderContentWithUrls()}
+        />
+      ))}
     </div>
   )
 }

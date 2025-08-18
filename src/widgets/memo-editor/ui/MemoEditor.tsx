@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
-import { LinkHighlighter } from '../../../shared/ui/LinkHighlighter'
+import { EditableTextWithLinks } from '../../../shared/ui/EditableTextWithLinks'
 import Resizer from '../../../shared/ui/Resizer'
 import 'highlight.js/styles/github.css'
 import './MemoEditor.css'
@@ -176,8 +176,8 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     }
   }, [currentMemoId, content, isModified, lastSavedContent]) // Stable dependencies only
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value)
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent)
     setIsModified(true)
   }
 
@@ -367,16 +367,11 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       <div className="memo-editor-content">
         {editorMode === 'edit' && (
           <div className="memo-editor-input full-width">
-            <textarea
-              ref={textareaRef}
-              className="memo-content-input"
+            <EditableTextWithLinks
               value={content}
               onChange={handleContentChange}
               placeholder="A blank space for your thoughts..."
-            />
-            <LinkHighlighter 
-              content={content}
-              textareaRef={textareaRef}
+              className="memo-content-input"
             />
           </div>
         )}
@@ -387,16 +382,11 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
               className="memo-editor-input resizable"
               style={{ width: `${editorWidth}%` }}
             >
-              <textarea
-                ref={textareaRef}
-                className="memo-content-input"
+              <EditableTextWithLinks
                 value={content}
                 onChange={handleContentChange}
                 placeholder="A blank space for your thoughts..."
-              />
-              <LinkHighlighter 
-                content={content}
-                textareaRef={textareaRef}
+                className="memo-content-input"
               />
               <Resizer
                 direction="horizontal"
