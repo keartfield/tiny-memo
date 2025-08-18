@@ -6,10 +6,16 @@
   word-break: break-all;
   max-width: 100%;
   max-height: 100%;
-  /* コンテナの幅を超えないように制限 */
-  overflow: hidden;
+  /* M2 Mac対応: スクロール同期を優先 */
+  overflow: auto;
   /* フレックスレイアウトを防ぐ */
   flex-shrink: 1;
+  /* M2 Mac向けレンダリング最適化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* ハードウェアアクセラレーション */
+  will-change: scroll-position;
+  transform: translateZ(0);
 }
 
 /* スクロールバーを非表示 */

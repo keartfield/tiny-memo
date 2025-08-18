@@ -16,27 +16,38 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null)
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // スクロール同期関数
+  // スクロール同期関数（M2 Mac対応）
   const syncScrollPosition = useCallback(() => {
     if (!textareaRef.current || !overlayRef.current) return
     
     const textarea = textareaRef.current
     const overlay = overlayRef.current
     
-    // スクロール位置を同期
-    overlay.scrollTop = textarea.scrollTop
-    overlay.scrollLeft = textarea.scrollLeft
+    // M2 Macでの高精度同期のため、直接値を設定
+    const scrollTop = textarea.scrollTop
+    const scrollLeft = textarea.scrollLeft
+    
+    if (overlay.scrollTop !== scrollTop) {
+      overlay.scrollTop = scrollTop
+    }
+    if (overlay.scrollLeft !== scrollLeft) {
+      overlay.scrollLeft = scrollLeft
+    }
   }, [])
 
-  // デバウンス付きの更新関数
-  const debouncedUpdate = useCallback(() => {
+  // M2 Mac向けの高頻度更新関数
+  const immediateUpdate = useCallback(() => {
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current)
     }
     
+    // M2 Macでは即座に同期
+    syncScrollPosition()
+    
+    // 追加の安定化のため8ms後にも再同期
     updateTimeoutRef.current = setTimeout(() => {
       syncScrollPosition()
-    }, 16) // 60fps相当
+    }, 8)
   }, [syncScrollPosition])
 
   useEffect(() => {
@@ -45,8 +56,18 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     const textarea = textareaRef.current
     const overlay = overlayRef.current
 
-    // スクロールイベントハンドラー（高パフォーマンス）
+    // M2 Mac対応スクロールハンドラー
     const handleScroll = () => {
+      // 即座に同期（M2 Macの高DPI対応）
+      if (overlayRef.current && textareaRef.current) {
+        const scrollTop = textareaRef.current.scrollTop
+        const scrollLeft = textareaRef.current.scrollLeft
+        
+        overlayRef.current.scrollTop = scrollTop
+        overlayRef.current.scrollLeft = scrollLeft
+      }
+      
+      // 追加の安定化フレーム
       requestAnimationFrame(() => {
         if (overlayRef.current && textareaRef.current) {
           overlayRef.current.scrollTop = textareaRef.current.scrollTop
@@ -57,12 +78,12 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
 
     // リサイズハンドラー
     const handleResize = () => {
-      debouncedUpdate()
+      immediateUpdate()
     }
 
     // テキスト変更ハンドラー
     const handleInput = () => {
-      debouncedUpdate()
+      immediateUpdate()
     }
 
     // イベントリスナーを追加
@@ -81,7 +102,7 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         clearTimeout(updateTimeoutRef.current)
       }
     }
-  }, [syncScrollPosition, debouncedUpdate])
+  }, [syncScrollPosition, immediateUpdate])
 
   // コンテンツ変更時の同期
   useEffect(() => {
