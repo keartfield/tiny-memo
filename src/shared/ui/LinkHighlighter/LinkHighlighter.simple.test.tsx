@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { LinkHighlighter } from './LinkHighlighter'
 
@@ -64,7 +64,7 @@ describe('LinkHighlighter Simple Tests', () => {
     mockOpenExternal.mockClear()
   })
 
-  const renderWithTextarea = (content: string) => {
+  const renderWithTextarea = (content: string, onLinkClick?: (url: string) => void) => {
     return render(
       <div style={{ position: 'relative' }}>
         <textarea
@@ -76,6 +76,7 @@ describe('LinkHighlighter Simple Tests', () => {
         <LinkHighlighter
           content={content}
           textareaRef={textareaRef}
+          onLinkClick={onLinkClick}
         />
       </div>
     )
@@ -84,7 +85,7 @@ describe('LinkHighlighter Simple Tests', () => {
   it('should render LinkHighlighter component', () => {
     const { container } = renderWithTextarea('Plain text without links')
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
   })
 
@@ -92,29 +93,30 @@ describe('LinkHighlighter Simple Tests', () => {
     const content = 'Check out [Google](https://google.com) for search.'
     const { container } = renderWithTextarea(content)
     
-    // Should render the overlay
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
     
-    // Should contain the link text
-    expect(overlay).toHaveTextContent('Google')
-    expect(overlay).toHaveTextContent('Check out')
-    expect(overlay).toHaveTextContent('for search.')
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
+    expect(urlElements[0]).toHaveTextContent('Google')
   })
 
   it('should render plain URLs', () => {
     const content = 'Visit https://example.com for more info.'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('https://example.com')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
+    expect(urlElements[0]).toHaveTextContent('https://example.com')
   })
 
   it('should handle empty content', () => {
     const { container } = renderWithTextarea('')
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
   })
 
@@ -122,23 +124,22 @@ describe('LinkHighlighter Simple Tests', () => {
     const content = 'Line 1 with https://example.com\nLine 2 with [Link](https://test.com)'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('https://example.com')
-    expect(overlay).toHaveTextContent('Link')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(2)
   })
 
-  it('should preserve text structure', () => {
-    const content = 'Before [link](https://example.com) after'
-    const { container } = renderWithTextarea(content)
+  it('should call onLinkClick when clicking on URL', () => {
+    const mockOnLinkClick = vi.fn()
+    const content = 'Visit https://example.com today'
+    const { container } = renderWithTextarea(content, mockOnLinkClick)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
-    expect(overlay).toBeInTheDocument()
+    const urlElement = container.querySelector('.url-text')
+    expect(urlElement).toBeInTheDocument()
     
-    // Check that text content is preserved in correct order
-    const textContent = overlay?.textContent || ''
-    expect(textContent).toContain('Before')
-    expect(textContent).toContain('link')
-    expect(textContent).toContain('after')
+    fireEvent.click(urlElement!)
+    expect(mockOnLinkClick).toHaveBeenCalledWith('https://example.com')
   })
 })

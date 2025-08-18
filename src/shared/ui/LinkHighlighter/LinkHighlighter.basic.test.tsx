@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { LinkHighlighter } from './LinkHighlighter'
 
@@ -20,7 +20,7 @@ describe('LinkHighlighter Basic Tests', () => {
     mockOpenExternal.mockClear()
   })
 
-  const renderWithTextarea = (content: string) => {
+  const renderWithTextarea = (content: string, onLinkClick?: (url: string) => void) => {
     return render(
       <div style={{ position: 'relative' }}>
         <textarea
@@ -32,6 +32,7 @@ describe('LinkHighlighter Basic Tests', () => {
         <LinkHighlighter
           content={content}
           textareaRef={textareaRef}
+          onLinkClick={onLinkClick}
         />
       </div>
     )
@@ -39,15 +40,13 @@ describe('LinkHighlighter Basic Tests', () => {
 
   it('should render LinkHighlighter component without crashing', () => {
     const { container } = renderWithTextarea('Plain text without links')
-    
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
   })
 
   it('should render empty content without issues', () => {
     const { container } = renderWithTextarea('')
-    
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
   })
 
@@ -55,61 +54,99 @@ describe('LinkHighlighter Basic Tests', () => {
     const content = 'Check out [Google](https://google.com) for search.'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('Google')
-    expect(overlay).toHaveTextContent('Check out')
-    expect(overlay).toHaveTextContent('for search.')
+    
+    // Should contain URL text elements
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
+    expect(urlElements[0]).toHaveTextContent('Google')
   })
 
   it('should render content with plain URLs', () => {
     const content = 'Visit https://example.com for more info.'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('https://example.com')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
+    expect(urlElements[0]).toHaveTextContent('https://example.com')
   })
 
   it('should handle mixed content with both link types', () => {
     const content = 'Check [Google](https://google.com) and https://github.com'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('Google')
-    expect(overlay).toHaveTextContent('https://github.com')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(2)
+    expect(urlElements[0]).toHaveTextContent('Google')
+    expect(urlElements[1]).toHaveTextContent('https://github.com')
   })
 
   it('should handle multiline content', () => {
     const content = 'Line 1 with https://example.com\nLine 2 with [Link](https://test.com)'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('https://example.com')
-    expect(overlay).toHaveTextContent('Link')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(2)
   })
 
   it('should preserve all text content including non-link text', () => {
     const content = 'Before [link](https://example.com) middle text and after'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
     
-    // All text should be preserved
-    expect(overlay).toHaveTextContent('Before')
-    expect(overlay).toHaveTextContent('link')
-    expect(overlay).toHaveTextContent('middle text and after')
+    // Check for transparent text elements
+    const transparentElements = container.querySelectorAll('.text-transparent')
+    expect(transparentElements.length).toBeGreaterThan(0)
+    
+    // Check for URL element
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
+    expect(urlElements[0]).toHaveTextContent('link')
+  })
+
+  it('should call onLinkClick when URL is clicked', () => {
+    const mockOnLinkClick = vi.fn()
+    const content = 'Check out https://example.com'
+    const { container } = renderWithTextarea(content, mockOnLinkClick)
+    
+    const urlElement = container.querySelector('.url-text')
+    expect(urlElement).toBeInTheDocument()
+    
+    fireEvent.click(urlElement!)
+    expect(mockOnLinkClick).toHaveBeenCalledWith('https://example.com')
+  })
+
+  it('should use electronAPI when onLinkClick is not provided', () => {
+    const content = 'Visit https://example.com'
+    const { container } = renderWithTextarea(content)
+    
+    const urlElement = container.querySelector('.url-text')
+    expect(urlElement).toBeInTheDocument()
+    
+    fireEvent.click(urlElement!)
+    expect(mockOpenExternal).toHaveBeenCalledWith('https://example.com')
   })
 
   it('should not crash with complex URLs', () => {
     const content = 'API: https://api.example.com/v1/users?filter=active&sort=name#section'
     const { container } = renderWithTextarea(content)
     
-    const overlay = container.querySelector('.link-highlighter-overlay')
+    const overlay = container.querySelector('.url-highlight-overlay')
     expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveTextContent('API:')
+    
+    const urlElements = container.querySelectorAll('.url-text')
+    expect(urlElements).toHaveLength(1)
   })
 })

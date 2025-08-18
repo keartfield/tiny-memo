@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { LinkParser } from '../markdown/parsers/LinkParser'
 import './LinkHighlighter.css'
 
@@ -16,63 +16,62 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null)
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Simplified approach - no complex positioning needed
-  const updateOverlay = useCallback(() => {
+  // スクロール同期関数
+  const syncScrollPosition = useCallback(() => {
     if (!textareaRef.current || !overlayRef.current) return
     
     const textarea = textareaRef.current
     const overlay = overlayRef.current
     
-    // Sync scroll position
+    // スクロール位置を同期
     overlay.scrollTop = textarea.scrollTop
     overlay.scrollLeft = textarea.scrollLeft
   }, [])
 
-  // デバウンスされたオーバーレイ更新関数
-  const debouncedUpdateOverlay = useCallback(() => {
+  // デバウンス付きの更新関数
+  const debouncedUpdate = useCallback(() => {
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current)
     }
     
     updateTimeoutRef.current = setTimeout(() => {
-      updateOverlay()
-    }, 50) // 50msのデバウンス
-  }, [updateOverlay])
+      syncScrollPosition()
+    }, 16) // 60fps相当
+  }, [syncScrollPosition])
 
   useEffect(() => {
     if (!textareaRef.current || !overlayRef.current) return
 
     const textarea = textareaRef.current
+    const overlay = overlayRef.current
 
-    // スクロール同期（requestAnimationFrameで最適化）
+    // スクロールイベントハンドラー（高パフォーマンス）
     const handleScroll = () => {
-      if (!overlayRef.current) return
-      
       requestAnimationFrame(() => {
-        if (!overlayRef.current) return
-        const overlay = overlayRef.current
-        // スクロール位置を完全に同期
-        overlay.scrollTop = textarea.scrollTop
-        overlay.scrollLeft = textarea.scrollLeft
+        if (overlayRef.current && textareaRef.current) {
+          overlayRef.current.scrollTop = textareaRef.current.scrollTop
+          overlayRef.current.scrollLeft = textareaRef.current.scrollLeft
+        }
       })
     }
 
-    // リサイズ対応
+    // リサイズハンドラー
     const handleResize = () => {
-      debouncedUpdateOverlay()
+      debouncedUpdate()
     }
 
-    // テキスト入力時のオーバーレイ更新
+    // テキスト変更ハンドラー
     const handleInput = () => {
-      debouncedUpdateOverlay()
+      debouncedUpdate()
     }
 
+    // イベントリスナーを追加
     textarea.addEventListener('scroll', handleScroll, { passive: true })
     textarea.addEventListener('input', handleInput)
     window.addEventListener('resize', handleResize)
 
-    // 初期スクロール位置を同期
-    handleScroll()
+    // 初期同期
+    syncScrollPosition()
 
     return () => {
       textarea.removeEventListener('scroll', handleScroll)
@@ -82,13 +81,14 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         clearTimeout(updateTimeoutRef.current)
       }
     }
-  }, [debouncedUpdateOverlay, updateOverlay])
+  }, [syncScrollPosition, debouncedUpdate])
 
-  // 初期化とcontent変更時にオーバーレイを更新
+  // コンテンツ変更時の同期
   useEffect(() => {
-    updateOverlay()
-  }, [content, updateOverlay])
+    syncScrollPosition()
+  }, [content, syncScrollPosition])
 
+  // リンククリックハンドラー
   const handleLinkClick = (url: string, e: React.MouseEvent) => {
     e.preventDefault()
     if (onLinkClick) {
@@ -98,48 +98,39 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     }
   }
 
-  const renderContentWithLinks = () => {
+  // URLを含むコンテンツをレンダリング
+  const renderContentWithUrls = () => {
     if (!content) return null
 
     const linkMatches = LinkParser.parseInline(content)
     if (linkMatches.length === 0) {
-      return <span style={{ color: 'transparent', userSelect: 'none' }}>{content}</span>
+      // URLがない場合は透明テキストを表示
+      return (
+        <span className="text-transparent">
+          {content}
+        </span>
+      )
     }
 
     const parts = []
     let lastIndex = 0
 
     linkMatches.forEach((link, index) => {
-      // Add invisible text before link to maintain layout
+      // URL前のテキスト（透明）
       if (link.startIndex > lastIndex) {
         parts.push(
-          <span key={`text-${lastIndex}`} style={{ color: 'transparent', userSelect: 'none' }}>
+          <span key={`text-${lastIndex}`} className="text-transparent">
             {content.substring(lastIndex, link.startIndex)}
           </span>
         )
       }
 
-      // Add link
+      // URLテキスト（色付き、クリッカブル）
       parts.push(
         <span
           key={`link-${index}`}
-          style={{
-            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#4fc3f7' : '#007acc',
-            textDecoration: 'underline',
-            cursor: 'pointer',
-            pointerEvents: 'auto'
-          }}
+          className="url-text"
           onClick={(e) => handleLinkClick(link.url, e)}
-          onMouseEnter={(e) => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
-            e.currentTarget.style.color = isDark ? '#81d4fa' : '#005a9b'
-            e.currentTarget.style.backgroundColor = isDark ? 'rgba(79, 195, 247, 0.1)' : 'rgba(0, 122, 204, 0.1)'
-          }}
-          onMouseLeave={(e) => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
-            e.currentTarget.style.color = isDark ? '#4fc3f7' : '#007acc'
-            e.currentTarget.style.backgroundColor = 'transparent'
-        }}
           title={link.url}
         >
           {content.substring(link.startIndex, link.endIndex + 1)}
@@ -149,10 +140,10 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
       lastIndex = link.endIndex + 1
     })
 
-    // Add remaining invisible text
+    // 残りのテキスト（透明）
     if (lastIndex < content.length) {
       parts.push(
-        <span key={`text-${lastIndex}`} style={{ color: 'transparent', userSelect: 'none' }}>
+        <span key={`text-${lastIndex}`} className="text-transparent">
           {content.substring(lastIndex)}
         </span>
       )
@@ -161,12 +152,13 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
     return parts
   }
 
+  // textareaのスタイルを取得
   const computedStyle = textareaRef.current ? window.getComputedStyle(textareaRef.current) : null
 
   return (
     <div 
       ref={overlayRef}
-      className="link-highlighter-overlay"
+      className="url-highlight-overlay"
       style={{
         position: 'absolute',
         top: 0,
@@ -175,8 +167,8 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         bottom: 0,
         pointerEvents: 'none',
         overflow: 'auto',
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE/Edge
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
         fontFamily: computedStyle?.fontFamily || 'inherit',
         fontSize: computedStyle?.fontSize || 'inherit',
         fontWeight: computedStyle?.fontWeight || 'inherit',
@@ -185,18 +177,21 @@ export const LinkHighlighter: React.FC<LinkHighlighterProps> = ({
         wordSpacing: computedStyle?.wordSpacing || 'inherit',
         padding: computedStyle?.padding || '0',
         borderWidth: computedStyle?.borderWidth || '0',
-        borderStyle: computedStyle?.borderStyle || 'none',
+        borderStyle: 'solid',
         borderColor: 'transparent',
         boxSizing: computedStyle?.boxSizing || 'border-box',
         margin: computedStyle?.margin || '0',
         whiteSpace: 'pre-wrap',
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
-        color: 'transparent',
-        background: 'transparent'
+        wordBreak: 'break-all',
+        background: 'transparent',
+        // コンテナの幅を超えないように制限
+        maxWidth: '100%',
+        minWidth: 0
       }}
     >
-      {renderContentWithLinks()}
+      {renderContentWithUrls()}
     </div>
   )
 }

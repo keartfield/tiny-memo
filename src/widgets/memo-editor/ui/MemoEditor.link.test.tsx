@@ -88,11 +88,11 @@ describe('MemoEditor Link Integration', () => {
       fireEvent.click(editButton)
 
       // Check that LinkHighlighter is rendered
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toBeInTheDocument()
 
       // Check that links are highlighted
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(2)
 
       expect(linkElements[0]).toHaveTextContent('Google')
@@ -114,7 +114,7 @@ describe('MemoEditor Link Integration', () => {
       fireEvent.click(editButton)
 
       // Click on the first link (Google)
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       fireEvent.click(linkElements[0])
 
       expect(mockOpenExternal).toHaveBeenCalledWith('https://google.com')
@@ -170,7 +170,7 @@ describe('MemoEditor Link Integration', () => {
       fireEvent.click(editButton)
 
       // Initial links
-      let linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      let linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(2)
 
       // Change content
@@ -180,7 +180,7 @@ describe('MemoEditor Link Integration', () => {
       })
 
       // Links should update
-      linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(1)
       expect(linkElements[0]).toHaveTextContent('https://single-link.com')
     })
@@ -198,11 +198,11 @@ describe('MemoEditor Link Integration', () => {
       )
 
       // Default mode is edit-preview, so LinkHighlighter should be present
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toBeInTheDocument()
 
       // Check that links are highlighted in the editor pane
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(2)
 
       // Check that preview pane also has links
@@ -227,7 +227,7 @@ describe('MemoEditor Link Integration', () => {
       })
 
       // Check editor highlighting
-      const editorLinks = container.querySelectorAll('.memo-editor-input span[style*="cursor: pointer"]')
+      const editorLinks = container.querySelectorAll('.memo-editor-input .url-text')
       expect(editorLinks).toHaveLength(1)
       expect(editorLinks[0]).toHaveTextContent('link text')
 
@@ -255,7 +255,7 @@ describe('MemoEditor Link Integration', () => {
       fireEvent.click(previewButton)
 
       // LinkHighlighter should not be present
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).not.toBeInTheDocument()
 
       // But preview links should be present
@@ -305,7 +305,7 @@ describe('MemoEditor Link Integration', () => {
       const editButton = screen.getByTitle('Edit')
       fireEvent.click(editButton)
 
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(1)
       expect(linkElements[0]).toHaveTextContent('OpenAI')
 
@@ -333,7 +333,7 @@ describe('MemoEditor Link Integration', () => {
       const editButton = screen.getByTitle('Edit')
       fireEvent.click(editButton)
 
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(1)
       expect(linkElements[0]).toHaveTextContent('https://github.com/microsoft/vscode')
 
@@ -361,7 +361,7 @@ describe('MemoEditor Link Integration', () => {
       const editButton = screen.getByTitle('Edit')
       fireEvent.click(editButton)
 
-      const linkElements = container.querySelectorAll('span[style*="cursor: pointer"]')
+      const linkElements = container.querySelectorAll('.url-text')
       expect(linkElements).toHaveLength(2)
       
       expect(linkElements[0]).toHaveTextContent('GitHub')

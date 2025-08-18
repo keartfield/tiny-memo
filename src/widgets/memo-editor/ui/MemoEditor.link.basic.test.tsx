@@ -63,7 +63,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       fireEvent.click(editButton)
 
       // Check that LinkHighlighter overlay exists
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toBeInTheDocument()
     })
 
@@ -78,7 +78,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       )
 
       // Default mode should have LinkHighlighter
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toBeInTheDocument()
     })
 
@@ -97,7 +97,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       fireEvent.click(previewButton)
 
       // LinkHighlighter should not be present
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).not.toBeInTheDocument()
 
       // But preview links should be present
@@ -162,7 +162,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       )
 
       // Check LinkHighlighter content
-      const overlay = container.querySelector('.link-highlighter-overlay')
+      const overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toHaveTextContent('Google')
       expect(overlay).toHaveTextContent('https://github.com')
       expect(overlay).toHaveTextContent('Check out')
@@ -187,7 +187,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       )
 
       // Initial content
-      let overlay = container.querySelector('.link-highlighter-overlay')
+      let overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toHaveTextContent('Google')
 
       // Update memo with different ID
@@ -207,7 +207,7 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       })
 
       // Content should update in overlay
-      overlay = container.querySelector('.link-highlighter-overlay')
+      overlay = container.querySelector('.url-highlight-overlay')
       expect(overlay).toHaveTextContent('New Link')
       expect(overlay).toHaveTextContent('Different content')
     })
@@ -225,17 +225,17 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       )
 
       // Start in edit-preview mode
-      expect(container.querySelector('.link-highlighter-overlay')).toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).toBeInTheDocument()
 
       // Switch to edit mode
       const editButton = screen.getByTitle('Edit')
       fireEvent.click(editButton)
-      expect(container.querySelector('.link-highlighter-overlay')).toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).toBeInTheDocument()
 
       // Switch back to edit-preview mode
       const editPreviewButton = screen.getByTitle('Edit & Preview')
       fireEvent.click(editPreviewButton)
-      expect(container.querySelector('.link-highlighter-overlay')).toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).toBeInTheDocument()
     })
 
     it('should remove LinkHighlighter in preview mode and restore when switching back', () => {
@@ -249,17 +249,17 @@ describe('MemoEditor Link Integration Basic Tests', () => {
       )
 
       // Start with LinkHighlighter present
-      expect(container.querySelector('.link-highlighter-overlay')).toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).toBeInTheDocument()
 
       // Switch to preview mode
       const previewButton = screen.getByTitle('Preview')
       fireEvent.click(previewButton)
-      expect(container.querySelector('.link-highlighter-overlay')).not.toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).not.toBeInTheDocument()
 
       // Switch back to edit-preview mode
       const editPreviewButton = screen.getByTitle('Edit & Preview')
       fireEvent.click(editPreviewButton)
-      expect(container.querySelector('.link-highlighter-overlay')).toBeInTheDocument()
+      expect(container.querySelector('.url-highlight-overlay')).toBeInTheDocument()
     })
   })
 })

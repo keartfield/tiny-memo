@@ -94,6 +94,9 @@
   border-right: 1px solid var(--border-primary);
   min-height: 0; /* Allow proper scrolling */
   position: relative; /* For LinkHighlighter positioning */
+  /* 長いURLによるレイアウト崩れを防ぐ */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .memo-editor-input.resizable {
@@ -132,6 +135,7 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: break-all;
   tab-size: 2;
   /* フォントのレンダリングを最適化 */
   font-feature-settings: 'liga' 0, 'calt' 0;
@@ -141,6 +145,8 @@
   -moz-osx-font-smoothing: grayscale;
   /* カーソルの表示を最適化 */
   caret-color: var(--text-primary);
+  /* 長いURLによるオーバーフローを防ぐ */
+  min-width: 0;
 }
 
 .memo-editor-input[style*="position: relative"] .memo-content-input {
@@ -187,6 +193,9 @@
   min-height: 0; /* Allow scrolling */
   flex-shrink: 0;
   border-left: 1px solid var(--border-primary);
+  /* 長いURLによるオーバーフローを防ぐ */
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 /* Custom scrollbar styles for memo preview */
@@ -515,6 +524,10 @@
   cursor: pointer !important;
   font-weight: 500 !important;
   transition: all 0.2s ease !important;
+  /* 長いURLを適切に改行 */
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  hyphens: none !important;
 }
 
 .markdown-preview a:hover {
@@ -528,6 +541,10 @@
   cursor: pointer !important;
   font-weight: 500 !important;
   transition: all 0.2s ease !important;
+  /* 長いURLを適切に改行 */
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  hyphens: none !important;
 }
 
 [data-theme="dark"] .markdown-preview a:hover {

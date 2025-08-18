@@ -1,40 +1,54 @@
-.link-highlighter-overlay {
+/* オーバーレイ要素のベーススタイル */
+.url-highlight-overlay {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  /* Prevent overflow outside container */
+  word-break: break-all;
   max-width: 100%;
   max-height: 100%;
+  /* コンテナの幅を超えないように制限 */
+  overflow: hidden;
+  /* フレックスレイアウトを防ぐ */
+  flex-shrink: 1;
 }
 
-/* Hide scrollbars in WebKit browsers */
-.link-highlighter-overlay::-webkit-scrollbar {
+/* スクロールバーを非表示 */
+.url-highlight-overlay::-webkit-scrollbar {
   width: 0;
   height: 0;
   background: transparent;
 }
 
-[data-theme="dark"] .link-highlight span {
-  color: #4fc3f7 !important;
+/* 透明テキスト（URLではない部分） */
+.text-transparent {
+  color: transparent;
+  user-select: none;
 }
 
-[data-theme="dark"] .link-highlight span:hover {
-  color: #81d4fa !important;
-}
-
-.link-highlight {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  font-weight: inherit;
+/* URLテキストのスタイル */
+.url-text {
+  color: #007acc;
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
   transition: all 0.2s ease;
+  /* 長いURLを適切に改行 */
+  word-break: break-all;
+  overflow-wrap: break-word;
+  hyphens: none;
 }
 
-.link-highlight:hover {
+.url-text:hover {
+  color: #005a9b;
   background-color: rgba(0, 122, 204, 0.1);
 }
 
-/* Dark mode */
-[data-theme="dark"] .link-highlight:hover {
+/* ダークモード対応 */
+[data-theme="dark"] .url-text {
+  color: #4fc3f7;
+}
+
+[data-theme="dark"] .url-text:hover {
+  color: #81d4fa;
   background-color: rgba(79, 195, 247, 0.1);
 }
