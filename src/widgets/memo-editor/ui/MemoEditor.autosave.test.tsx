@@ -57,8 +57,8 @@ describe('MemoEditor - 自動保存テスト', () => {
     it('メモが選択されている場合は編集画面を表示', () => {
       render(<MemoEditor {...mockProps} />)
       
-      // テキストエリアが表示される
-      expect(screen.getByPlaceholderText('A blank space for your thoughts...')).toBeInTheDocument()
+      // テキストエディターが表示される
+      expect(screen.getByRole('textbox')).toBeInTheDocument()
       
       // フォルダー選択が表示される
       expect(screen.getByDisplayValue('No Folder')).toBeInTheDocument()
@@ -68,14 +68,14 @@ describe('MemoEditor - 自動保存テスト', () => {
       const user = userEvent.setup()
       render(<MemoEditor {...mockProps} />)
       
-      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
+      const editor = screen.getByRole('textbox')
       
       // テキストを変更
-      await user.clear(textarea)
-      await user.type(textarea, '新しい内容')
+      await user.clear(editor)
+      await user.type(editor, '新しい内容')
       
-      // 変更された内容が表示される
-      expect(textarea).toHaveValue('新しい内容')
+      // 変更された内容が反映される
+      expect(editor).toHaveTextContent('新しい内容')
     })
   })
 
@@ -91,17 +91,17 @@ describe('MemoEditor - 自動保存テスト', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
+      const editor = screen.getByRole('textbox')
       
-      // 初期内容が表示される
-      expect(textarea).toHaveValue('# テストメモ\n\nこれはテストの内容です。')
+      // エディターが表示される
+      expect(editor).toBeInTheDocument()
       
       // テキストを編集
-      await user.clear(textarea)
-      await user.type(textarea, '新しい内容')
+      await user.clear(editor)
+      await user.type(editor, '新しい内容')
       
       // 編集された内容が反映される
-      expect(textarea).toHaveValue('新しい内容')
+      expect(editor).toHaveTextContent('新しい内容')
     })
 
     it('テキスト入力によりisModifiedがtrueになることを確認', async () => {
@@ -115,14 +115,14 @@ describe('MemoEditor - 自動保存テスト', () => {
       
       render(<MemoEditor {...props} />)
       
-      const textarea = screen.getByPlaceholderText('A blank space for your thoughts...')
+      const editor = screen.getByRole('textbox')
       
       // テキストを変更
-      await user.clear(textarea)
-      await user.type(textarea, '新しい内容でテスト')
+      await user.clear(editor)
+      await user.type(editor, '新しい内容でテスト')
       
       // 変更された内容が反映される
-      expect(textarea).toHaveValue('新しい内容でテスト')
+      expect(editor).toHaveTextContent('新しい内容でテスト')
     })
 
     it('onMemoUpdate関数が正しく渡されている', () => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
-import { EditableTextWithLinks } from '../../../shared/ui/EditableTextWithLinks'
+import { SimpleTextEditor } from '../../../shared/ui/SimpleTextEditor'
 import Resizer from '../../../shared/ui/Resizer'
 import 'highlight.js/styles/github.css'
 import './MemoEditor.css'
@@ -19,14 +19,13 @@ type EditorMode = 'edit' | 'edit-preview' | 'preview'
 const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, onMemoFolderUpdate }) => {
   const [content, setContent] = useState('')
   const [isModified, setIsModified] = useState(false)
-  const [_, setIsSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [lastSavedContent, setLastSavedContent] = useState('')
   const [editorMode, setEditorMode] = useState<EditorMode>('edit-preview')
   const [isDragOver, setIsDragOver] = useState(false)
   const [imageCache, setImageCache] = useState<Map<string, string>>(new Map())
   const [editorWidth, setEditorWidth] = useState(50) // Percentage width of editor
   const editorRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const markdownPreviewRef = useRef<HTMLDivElement>(null)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -54,17 +53,12 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       }, 1000)
     }
 
-    const textareaElement = textareaRef.current
     const previewElement = previewRef.current
     const markdownPreviewElement = markdownPreviewRef.current
 
-    const textareaScrollHandler = () => handleScroll(textareaElement!)
     const previewScrollHandler = () => handleScroll(previewElement!)
     const markdownPreviewScrollHandler = () => handleScroll(markdownPreviewElement!)
 
-    if (textareaElement) {
-      textareaElement.addEventListener('scroll', textareaScrollHandler, { passive: true })
-    }
     if (previewElement) {
       previewElement.addEventListener('scroll', previewScrollHandler, { passive: true })
     }
@@ -73,9 +67,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     }
 
     return () => {
-      if (textareaElement) {
-        textareaElement.removeEventListener('scroll', textareaScrollHandler)
-      }
       if (previewElement) {
         previewElement.removeEventListener('scroll', previewScrollHandler)
       }
@@ -208,14 +199,10 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       // Use a simple file reference that we'll handle in the img component
       const imageMarkdown = `![${file.name}](image://${filename})`
       
-      const textarea = document.querySelector('.memo-content-input') as HTMLTextAreaElement
-      
-      if (textarea) {
-        const cursorPos = textarea.selectionStart
-        const newContent = content.slice(0, cursorPos) + '\n' + imageMarkdown + '\n' + content.slice(cursorPos)
-        setContent(newContent)
-        setIsModified(true)
-      }
+      // 画像を末尾に追加（contentEditableでは選択位置の取得が複雑なため）
+      const newContent = content + '\n' + imageMarkdown + '\n'
+      setContent(newContent)
+      setIsModified(true)
     } catch (error) {
       console.error('Failed to upload image:', error)
     }
@@ -367,7 +354,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
       <div className="memo-editor-content">
         {editorMode === 'edit' && (
           <div className="memo-editor-input full-width">
-            <EditableTextWithLinks
+            <SimpleTextEditor
               value={content}
               onChange={handleContentChange}
               placeholder="A blank space for your thoughts..."
@@ -382,7 +369,7 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
               className="memo-editor-input resizable"
               style={{ width: `${editorWidth}%` }}
             >
-              <EditableTextWithLinks
+              <SimpleTextEditor
                 value={content}
                 onChange={handleContentChange}
                 placeholder="A blank space for your thoughts..."
