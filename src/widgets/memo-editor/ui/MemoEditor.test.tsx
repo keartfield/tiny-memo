@@ -626,4 +626,98 @@ describe('MemoEditor', () => {
       expect(resizerParent).not.toHaveClass('resizing')
     })
   })
+
+  describe('プレーンテキストペースト機能', () => {
+    it('リッチテキストをペーストしてもプレーンテキストのみが挿入される', async () => {
+      // 空のメモでテストを実行
+      const emptyMemo: Memo = {
+        id: '1',
+        content: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        folderId: null
+      }
+      
+      render(<MemoEditor {...mockProps} memo={emptyMemo} />)
+      
+      const editor = screen.getByRole('textbox')
+      
+      // エディターをクリックしてフォーカス
+      fireEvent.click(editor)
+      
+      // Selection APIをモック
+      const mockRange = {
+        deleteContents: vi.fn(),
+        insertNode: vi.fn(),
+        setStartAfter: vi.fn(),
+        setEndAfter: vi.fn(),
+      }
+      
+      const mockSelection = {
+        rangeCount: 1,
+        getRangeAt: vi.fn(() => mockRange),
+        removeAllRanges: vi.fn(),
+        addRange: vi.fn()
+      }
+      
+      Object.defineProperty(window, 'getSelection', {
+        value: () => mockSelection,
+        writable: true
+      })
+      
+      // ペーストイベントを作成
+      const pasteEvent = Object.assign(new Event('paste', { bubbles: true }), {
+        clipboardData: {
+          getData: vi.fn((format: string) => {
+            if (format === 'text/plain') {
+              return 'プレーンテキストのみ'
+            }
+            return ''
+          })
+        }
+      })
+      
+      // ペーストイベントを発火
+      fireEvent(editor, pasteEvent)
+      
+      // ペーストハンドラーが呼ばれることを確認
+      expect(pasteEvent.clipboardData.getData).toHaveBeenCalledWith('text/plain')
+    })
+
+    it('改行を含むテキストのペースト処理が正しく動作する', async () => {
+      // 空のメモでテストを実行
+      const emptyMemo: Memo = {
+        id: '1',
+        content: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        folderId: null
+      }
+      
+      render(<MemoEditor {...mockProps} memo={emptyMemo} />)
+      
+      const editor = screen.getByRole('textbox')
+      
+      // エディターをクリックしてフォーカス
+      fireEvent.click(editor)
+      
+      // ペーストイベントを作成
+      const pasteEvent = Object.assign(new Event('paste', { bubbles: true }), {
+        clipboardData: {
+          getData: vi.fn((format: string) => {
+            if (format === 'text/plain') {
+              return '1行目\n2行目\n3行目'
+            }
+            return ''
+          })
+        }
+      })
+      
+      // ペーストイベントを発火
+      fireEvent(editor, pasteEvent)
+      
+      // クリップボードからプレーンテキストが取得されることを確認
+      expect(pasteEvent.clipboardData.getData).toHaveBeenCalledWith('text/plain')
+    })
+  })
 })

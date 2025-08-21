@@ -53,6 +53,52 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
     setTimeout(updateContent, 0)
   }, [updateContent])
 
+  // ペーストイベントハンドラー（プレーンテキストのみ受け入れ）
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault()
+    
+    // クリップボードからプレーンテキストを取得
+    const plainText = e.clipboardData.getData('text/plain')
+    
+    // 現在の選択範囲に挿入
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.deleteContents()
+      
+      // 改行を含むテキストの場合、BRタグに変換して挿入
+      if (plainText.includes('\n')) {
+        const lines = plainText.split('\n')
+        for (let i = 0; i < lines.length; i++) {
+          if (i > 0) {
+            const br = document.createElement('br')
+            range.insertNode(br)
+            range.setStartAfter(br)
+            range.setEndAfter(br)
+          }
+          if (lines[i]) {
+            const textNode = document.createTextNode(lines[i])
+            range.insertNode(textNode)
+            range.setStartAfter(textNode)
+            range.setEndAfter(textNode)
+          }
+        }
+      } else {
+        // 単一行のテキストの場合
+        const textNode = document.createTextNode(plainText)
+        range.insertNode(textNode)
+        range.setStartAfter(textNode)
+        range.setEndAfter(textNode)
+      }
+      
+      selection.removeAllRanges()
+      selection.addRange(range)
+      
+      // コンテンツ更新をトリガー
+      setTimeout(updateContent, 0)
+    }
+  }, [updateContent])
+
   // 外部からの値の変更を反映
   useEffect(() => {
     if (!editableRef.current) return
@@ -76,6 +122,7 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
       onInput={handleInput}
       onCompositionStart={handleCompositionStart}
       onCompositionEnd={handleCompositionEnd}
+      onPaste={handlePaste}
       data-placeholder={placeholder}
       spellCheck={false}
     />
