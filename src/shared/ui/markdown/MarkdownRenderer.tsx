@@ -21,8 +21,8 @@ type ParseResult =
 
 interface MarkdownRendererProps {
   content: string
-  imageCache: Map<string, string>
-  getImageSrc: (filename: string) => Promise<string>
+  imageCache?: Map<string, string>
+  getImageSrc?: (filename: string) => Promise<string>
 }
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({

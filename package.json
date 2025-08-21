@@ -55,12 +55,9 @@
   "dependencies": {
     "@prisma/client": "^6.12.0",
     "highlight.js": "^11.11.1",
-    "prism-react-renderer": "^2.4.1",
     "prisma": "^6.12.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-markdown": "^10.1.0",
-    "rehype-highlight": "^7.0.2"
+    "react-dom": "^19.1.0"
   },
   "build": {
     "appId": "com.tiny-memo.app",

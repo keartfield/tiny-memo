@@ -1,5 +1,3 @@
-import { Memo } from '../types'
-
 /**
  * Extract title from memo content (first line)
  * @param content The memo content
@@ -27,31 +25,10 @@ export function getMemoTitle(memo: { content: string }): string {
   return extractTitle(memo.content)
 }
 
-/**
- * Filter memos by search query
- * @param memos Array of memos to filter
- * @param query Search query string
- * @returns Filtered memos
- */
-export function filterMemosByQuery(memos: Memo[], query: string): Memo[] {
-  if (!query.trim()) {
-    return memos
-  }
-
-  const lowerQuery = query.toLowerCase()
-  return memos.filter(memo => 
-    extractTitle(memo.content).toLowerCase().includes(lowerQuery) ||
-    memo.content.toLowerCase().includes(lowerQuery)
-  )
-}
-
-/**
- * Sort memos by updated date (newest first)
- * @param memos Array of memos to sort
- * @returns Sorted memos
- */
-export function sortMemosByDate(memos: Memo[]): Memo[] {
-  return [...memos].sort((a, b) => 
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-}
+// Re-export filtering functions from entities layer for consistency
+export { 
+  filterMemosByQuery, 
+  sortMemosByDate, 
+  filterMemosByFolder, 
+  getMemoCountByFolder 
+} from '../../entities/memo/lib/memoFilters'

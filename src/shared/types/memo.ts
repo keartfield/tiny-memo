@@ -17,16 +17,27 @@ export interface MemoUpdateInput {
   folderId?: string | null
 }
 
-export interface SearchResult extends Memo {
+export interface MemoSearchResult extends Memo {
   folder?: Folder | null
 }
 
 export interface Folder {
   id: string
   name: string
+  order: number
   createdAt: Date
   updatedAt: Date
   _count?: {
     memos: number
   }
+}
+
+export interface FolderCreateInput {
+  name: string
+  order?: number
+}
+
+export interface FolderUpdateInput {
+  name?: string
+  order?: number
 }
