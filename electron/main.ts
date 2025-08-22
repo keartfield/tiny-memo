@@ -128,7 +128,7 @@ app.whenReady().then(async () => {
   
   createWindow()
   
-  // Set application menu
+  // Set application menu with system keyboard shortcuts
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: 'tiny memo',
@@ -153,6 +153,8 @@ app.whenReady().then(async () => {
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
+        { role: 'pasteAndMatchStyle' },
+        { role: 'delete' },
         { type: 'separator' },
         { role: 'selectAll' }
       ]
@@ -175,7 +177,10 @@ app.whenReady().then(async () => {
       label: 'Window',
       submenu: [
         { role: 'minimize' },
-        { role: 'close' }
+        { role: 'zoom' },
+        { role: 'close' },
+        { type: 'separator' },
+        { role: 'front' }
       ]
     }
   ]
