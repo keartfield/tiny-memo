@@ -7,6 +7,9 @@ const mockElectronAPI = {
   folders: {
     getAll: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
+    updateOrder: vi.fn(),
+    reorderFolders: vi.fn(),
     delete: vi.fn()
   }
 }
@@ -20,6 +23,7 @@ Object.defineProperty(window, 'electronAPI', {
 const mockFolder: Folder = {
   id: '1',
   name: 'テストフォルダー',
+  order: 0,
   createdAt: new Date('2023-01-01'),
   updatedAt: new Date('2023-01-01'),
   _count: { memos: 5 }
@@ -30,6 +34,7 @@ const mockFolders: Folder[] = [
   {
     id: '2',
     name: 'フォルダー2',
+    order: 1,
     createdAt: new Date('2023-01-02'),
     updatedAt: new Date('2023-01-02'),
     _count: { memos: 3 }
@@ -37,6 +42,7 @@ const mockFolders: Folder[] = [
   {
     id: '3',
     name: 'Empty Folder',
+    order: 2,
     createdAt: new Date('2023-01-03'),
     updatedAt: new Date('2023-01-03'),
     _count: { memos: 0 }
@@ -98,6 +104,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'new-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -115,6 +122,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'english-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -131,6 +139,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'special-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -147,6 +156,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'spaced-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -163,6 +173,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'numeric-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -179,6 +190,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'long-folder',
         name: folderName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -330,6 +342,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'long-name-folder',
         name: longName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -346,6 +359,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'unicode-folder',
         name: unicodeName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -362,6 +376,7 @@ describe('FolderApi', () => {
       const createdFolder: Folder = {
         id: 'multiline-folder',
         name: multilineName,
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }

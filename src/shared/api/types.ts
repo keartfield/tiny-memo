@@ -1,10 +1,13 @@
-import { Folder, Memo, MemoCreateInput, MemoUpdateInput } from '../types'
+import { Folder } from '../../entities/folder/model/types'
+import { Memo, MemoCreateInput, MemoUpdateInput } from '../../entities/memo/model/types'
 
 export interface ElectronAPI {
   folders: {
     getAll: () => Promise<Folder[]>
     create: (name: string) => Promise<Folder>
     update: (id: string, name: string) => Promise<Folder>
+    updateOrder: (id: string, order: number) => Promise<Folder>
+    reorderFolders: (folderIds: string[]) => Promise<void>
     delete: (id: string) => Promise<void>
   }
   memos: {

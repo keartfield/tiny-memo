@@ -14,6 +14,14 @@ vi.mock('../../../entities/folder', () => ({
 const mockFolderApi = vi.mocked(folderApi)
 const mockIsValidFolderName = vi.mocked(isValidFolderName)
 
+const mockFolder = {
+  id: '1',
+  name: 'テストフォルダー',
+  order: 0,
+  createdAt: new Date(),
+  updatedAt: new Date()
+}
+
 describe('FolderOperations', () => {
   let operations: FolderOperations
 
@@ -45,7 +53,7 @@ describe('FolderOperations', () => {
   describe('createFolder', () => {
     it('有効なフォルダー名でフォルダーを作成する', async () => {
       mockIsValidFolderName.mockReturnValue(true)
-      mockFolderApi.create.mockResolvedValue(undefined)
+      mockFolderApi.create.mockResolvedValue(mockFolder)
       
       await operations.createFolder('新しいフォルダー')
       
@@ -106,7 +114,7 @@ describe('folderOperations singleton', () => {
 
   it('createFolderメソッドが使用できる', async () => {
     mockIsValidFolderName.mockReturnValue(true)
-    mockFolderApi.create.mockResolvedValue(undefined)
+    mockFolderApi.create.mockResolvedValue(mockFolder)
     
     await folderOperations.createFolder('テストフォルダー')
     

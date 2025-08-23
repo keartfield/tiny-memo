@@ -12,6 +12,7 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'Programming',
+    order: 0,
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     _count: { memos: 5 }
@@ -19,6 +20,7 @@ const mockFolders: Folder[] = [
   {
     id: '2',
     name: 'Personal',
+    order: 1,
     createdAt: new Date('2023-01-02'),
     updatedAt: new Date('2023-01-02'),
     _count: { memos: 3 }
@@ -26,6 +28,7 @@ const mockFolders: Folder[] = [
   {
     id: '3',
     name: 'Empty Folder',
+    order: 2,
     createdAt: new Date('2023-01-03'),
     updatedAt: new Date('2023-01-03'),
     _count: { memos: 0 }
@@ -33,6 +36,7 @@ const mockFolders: Folder[] = [
   {
     id: '4',
     name: 'No Count Folder',
+    order: 3,
     createdAt: new Date('2023-01-04'),
     updatedAt: new Date('2023-01-04')
   }
@@ -59,6 +63,7 @@ describe('folder utility functions', () => {
       const japaneseFolder: Folder = {
         id: '5',
         name: 'プログラミング',
+        order: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 10 }
@@ -71,6 +76,7 @@ describe('folder utility functions', () => {
       const specialFolder: Folder = {
         id: '6',
         name: 'Folder@#$%',
+        order: 6,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 2 }
@@ -83,6 +89,7 @@ describe('folder utility functions', () => {
       const longNameFolder: Folder = {
         id: '7',
         name: 'Very Long Folder Name That Contains Many Characters',
+        order: 7,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 1 }
@@ -158,6 +165,7 @@ describe('folder utility functions', () => {
       const folderWithUndefinedCount: Folder = {
         id: '5',
         name: 'Test Folder',
+        order: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: undefined as any }
@@ -169,6 +177,7 @@ describe('folder utility functions', () => {
       const folderWithoutCount: Folder = {
         id: '6',
         name: 'No Count',
+        order: 6,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: undefined as any
@@ -324,6 +333,7 @@ describe('folder utility functions', () => {
       const longFolder: Folder = {
         id: '1',
         name: longName,
+        order: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 1 }
@@ -337,6 +347,7 @@ describe('folder utility functions', () => {
       const negativeCountFolder: Folder = {
         id: '1',
         name: 'Negative',
+        order: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: -1 }
@@ -350,6 +361,7 @@ describe('folder utility functions', () => {
       const unicodeFolder: Folder = {
         id: '1',
         name: '📁 Folder with 絵文字',
+        order: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 5 }

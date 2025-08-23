@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { extractTitle, getMemoTitle, filterMemosByQuery, sortMemosByDate } from './memo'
-import { Memo } from '../types'
+import { Memo } from '../../entities/memo/model/types'
 
 const mockMemos: Memo[] = [
   {

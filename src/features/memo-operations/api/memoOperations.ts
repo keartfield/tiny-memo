@@ -1,4 +1,4 @@
-import { memoApi, isMemoEmpty } from '../../../entities/memo'
+import { memoApi } from '../../../entities/memo'
 
 export interface MemoOperationsInterface {
   validateMemoContent: (content: string) => boolean

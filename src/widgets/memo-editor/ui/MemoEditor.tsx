@@ -1,6 +1,5 @@
 import React, { useRef, useCallback, useMemo } from 'react'
 import { Memo } from '../../../entities/memo'
-import { Folder } from '../../../entities/folder'
 import { MarkdownRenderer } from '../../../shared/ui/markdown'
 import { SimpleTextEditor } from '../../../shared/ui/SimpleTextEditor'
 import Resizer from '../../../shared/ui/Resizer'
@@ -17,11 +16,10 @@ import './MemoEditor.css'
 
 interface MemoEditorProps {
   memo: Memo | null
-  folders: Folder[]
   onMemoUpdate: (id: string, content: string) => Promise<void>
 }
 
-const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate }) => {
+const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onMemoUpdate }) => {
   const editorRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const markdownPreviewRef = useRef<HTMLDivElement>(null)

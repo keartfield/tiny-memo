@@ -6,6 +6,7 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'Programming',
+    order: 0,
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     _count: { memos: 5 }
@@ -13,6 +14,7 @@ const mockFolders: Folder[] = [
   {
     id: '2',
     name: 'Personal',
+    order: 1,
     createdAt: new Date('2023-01-02'),
     updatedAt: new Date('2023-01-02'),
     _count: { memos: 3 }
@@ -20,6 +22,7 @@ const mockFolders: Folder[] = [
   {
     id: '3',
     name: 'Work',
+    order: 2,
     createdAt: new Date('2023-01-03'),
     updatedAt: new Date('2023-01-03'),
     _count: { memos: 8 }
@@ -27,6 +30,7 @@ const mockFolders: Folder[] = [
   {
     id: '4',
     name: 'Archive',
+    order: 3,
     createdAt: new Date('2023-01-04'),
     updatedAt: new Date('2023-01-04'),
     _count: { memos: 1 }
@@ -34,6 +38,7 @@ const mockFolders: Folder[] = [
   {
     id: '5',
     name: 'プロジェクト',
+    order: 4,
     createdAt: new Date('2023-01-05'),
     updatedAt: new Date('2023-01-05'),
     _count: { memos: 0 }
@@ -366,6 +371,7 @@ describe('folderFilters', () => {
       const largeFolders: Folder[] = Array.from({ length: 1000 }, (_, i) => ({
         id: i.toString(),
         name: `Folder ${i}`,
+        order: i,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: i % 10 }

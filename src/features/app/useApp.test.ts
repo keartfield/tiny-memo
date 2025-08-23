@@ -151,6 +151,7 @@ describe('useApp', () => {
     const testFolder: Folder = {
       id: '1',
       name: 'テストフォルダー',
+      order: 0,
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -177,7 +178,7 @@ describe('useApp', () => {
 
   it('フォルダー削除が正しく動作する', async () => {
     const { result } = renderHook(() => useApp())
-    mockUseFolders.selectedFolder = { id: '1', name: 'テスト', createdAt: new Date(), updatedAt: new Date() }
+    mockUseFolders.selectedFolder = { id: '1', name: 'テスト', order: 0, createdAt: new Date(), updatedAt: new Date() }
     
     await act(async () => {
       await result.current.handleFolderDelete('1')
@@ -304,6 +305,7 @@ describe('useApp', () => {
     const testFolder: Folder = {
       id: '1',
       name: 'Last Selected',
+      order: 0,
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -326,6 +328,7 @@ describe('useApp', () => {
     const testFolder: Folder = {
       id: '1',
       name: 'Test Folder',
+      order: 0,
       createdAt: new Date(),
       updatedAt: new Date()
     }

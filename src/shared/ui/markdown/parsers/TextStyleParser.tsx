@@ -13,7 +13,7 @@ export class TextStyleParser {
     
     // Bold text (**text**)
     const boldRegex = /\*\*([^*]+)\*\*/g
-    let match
+    let match: RegExpExecArray | null
     while ((match = boldRegex.exec(text)) !== null) {
       matches.push({
         type: 'bold',
@@ -29,8 +29,8 @@ export class TextStyleParser {
       // Skip if this is part of a bold match
       const isBoldPart = matches.some(m => 
         m.type === 'bold' && 
-        match.index >= m.startIndex && 
-        match.index + match[0].length <= m.endIndex + 1
+        match!.index >= m.startIndex && 
+        match!.index + match![0].length <= m.endIndex + 1
       )
       
       if (!isBoldPart) {

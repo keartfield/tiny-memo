@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import FolderSidebar from './FolderSidebar'
 import { Folder } from '../../../entities/folder'
@@ -8,6 +8,7 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'フォルダー1',
+    order: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     _count: { memos: 3 }
@@ -15,6 +16,7 @@ const mockFolders: Folder[] = [
   {
     id: '2',
     name: 'フォルダー2',
+    order: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
     _count: { memos: 1 }
@@ -26,7 +28,9 @@ const mockProps = {
   selectedFolder: null,
   onFolderSelect: vi.fn(),
   onFolderCreate: vi.fn(),
+  onFolderUpdate: vi.fn(),
   onFolderDelete: vi.fn(),
+  onFolderReorder: vi.fn(),
   onMemoFolderUpdate: vi.fn(),
   isSearching: false
 }
@@ -292,6 +296,7 @@ describe('FolderSidebar', () => {
       {
         id: '1',
         name: 'Empty Folder',
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         _count: { memos: 0 }
@@ -308,6 +313,7 @@ describe('FolderSidebar', () => {
       {
         id: '1',
         name: 'Folder Without Count',
+        order: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       }

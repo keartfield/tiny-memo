@@ -42,7 +42,25 @@ export class HeadingParser {
       paddingBottom: level === 1 ? '0.3em' : '0'
     }
 
-    const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements
-    return React.createElement(HeadingTag, { key, style }, text)
+    // ヘッダーレベルを1-6の範囲に制限
+    const headingLevel = Math.min(Math.max(level, 1), 6)
+    
+    // 適切なヘッダータグを選択
+    switch (headingLevel) {
+      case 1:
+        return <h1 key={key} style={style}>{text}</h1>
+      case 2:
+        return <h2 key={key} style={style}>{text}</h2>
+      case 3:
+        return <h3 key={key} style={style}>{text}</h3>
+      case 4:
+        return <h4 key={key} style={style}>{text}</h4>
+      case 5:
+        return <h5 key={key} style={style}>{text}</h5>
+      case 6:
+        return <h6 key={key} style={style}>{text}</h6>
+      default:
+        return <h1 key={key} style={style}>{text}</h1>
+    }
   }
 }

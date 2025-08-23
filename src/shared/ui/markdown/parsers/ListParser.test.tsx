@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ListParser, ListItem } from './ListParser'
+import { ListParser } from './ListParser'
 
 describe('ListParser', () => {
   describe('getIndentLevel', () => {

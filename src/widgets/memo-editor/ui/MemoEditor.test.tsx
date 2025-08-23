@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MemoEditor from './MemoEditor'
 import { Memo } from '../../../entities/memo'
-import { Folder } from '../../../entities/folder'
 
 const mockMemo: Memo = {
   id: '1',
@@ -12,23 +11,6 @@ const mockMemo: Memo = {
   updatedAt: new Date(),
   folderId: null
 }
-
-const mockFolders: Folder[] = [
-  {
-    id: '1',
-    name: 'フォルダー1',
-    order: 0,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    name: 'フォルダー2',
-    order: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-]
 
 // ElectronAPIのモック
 const mockElectronAPI = {
@@ -54,7 +36,6 @@ Object.defineProperty(File.prototype, 'arrayBuffer', {
 
 const mockProps = {
   memo: mockMemo,
-  folders: mockFolders,
   onMemoUpdate: vi.fn()
 }
 

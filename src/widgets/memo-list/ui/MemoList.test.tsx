@@ -32,6 +32,7 @@ const mockMemos: Memo[] = [
 const mockFolder: Folder = {
   id: '1',
   name: 'テストフォルダー',
+  order: 0,
   createdAt: new Date(),
   updatedAt: new Date()
 }

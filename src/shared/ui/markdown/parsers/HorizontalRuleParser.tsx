@@ -21,7 +21,7 @@ export class HorizontalRuleParser {
     }
   }
 
-  static render(result: HorizontalRuleParserResult, key: number): React.ReactElement {
+  static render(_result: HorizontalRuleParserResult, key: number): React.ReactElement {
     return (
       <hr key={key} style={{ 
         border: 'none', 

@@ -5,9 +5,9 @@ interface ResizerProps extends ResizeHandlerProps {
   className?: string
 }
 
-const Resizer: React.FC<ResizerProps> = ({ direction, onResize, className = '' }) => {
+const Resizer: React.FC<ResizerProps> = ({ direction, onResize }) => {
   const [isDragging, setIsDragging] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
+  const [_, setIsHovering] = useState(false)
   const startPosRef = useRef(0)
   const lastPosRef = useRef(0)
   const resizerRef = useRef<HTMLDivElement>(null)

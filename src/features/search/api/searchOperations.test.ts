@@ -53,7 +53,7 @@ describe('SearchOperations', () => {
     })
 
     it('空のクエリでも正しく処理する', () => {
-      const expectedResults = []
+      const expectedResults: any[] = []
       mockFilterMemosByQuery.mockReturnValue(expectedResults)
 
       const result = operations.searchMemos('', mockMemos)
@@ -63,7 +63,7 @@ describe('SearchOperations', () => {
     })
 
     it('空のメモリストでも正しく処理する', () => {
-      const expectedResults = []
+      const expectedResults: any[] = []
       mockFilterMemosByQuery.mockReturnValue(expectedResults)
 
       const result = operations.searchMemos('test', [])
@@ -210,7 +210,7 @@ describe('エッジケース', () => {
     const unicodeQuery = '🔍 検索 search العربية'
     mockFilterMemosByQuery.mockReturnValue([])
 
-    const result = operations.searchMemos(unicodeQuery, mockMemos)
+    operations.searchMemos(unicodeQuery, mockMemos)
 
     expect(mockFilterMemosByQuery).toHaveBeenCalledWith(mockMemos, unicodeQuery)
   })

@@ -115,7 +115,6 @@ const MainPage: React.FC = () => {
         <div className="memo-editor" style={{ flex: 1 }}>
           <MemoEditor
             memo={selectedMemo}
-            folders={folders}
             onMemoUpdate={handleMemoUpdate}
           />
         </div>

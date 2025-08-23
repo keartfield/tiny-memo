@@ -18,6 +18,7 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'フォルダー1',
+    order: 0,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     _count: { memos: 5 }
@@ -25,6 +26,7 @@ const mockFolders: Folder[] = [
   {
     id: '2',
     name: 'フォルダー2',
+    order: 1,
     createdAt: new Date('2024-01-02'),
     updatedAt: new Date('2024-01-02'),
     _count: { memos: 3 }
@@ -331,6 +333,7 @@ describe('useFolders', () => {
       const folderWithoutCount = {
         id: '3',
         name: 'フォルダー3',
+        order: 2,
         createdAt: new Date(),
         updatedAt: new Date()
       }

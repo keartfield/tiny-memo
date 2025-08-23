@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import MemoEditor from './MemoEditor'
 import { Memo } from '../../../entities/memo'
-import { Folder } from '../../../entities/folder'
 
 // ElectronAPIのモック
 const mockElectronAPI = {
@@ -43,26 +42,8 @@ const mockMemo: Memo = {
   folderId: null
 }
 
-const mockFolders: Folder[] = [
-  {
-    id: '1',
-    name: 'フォルダー1',
-    order: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    name: 'フォルダー2',
-    order: 2,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-]
-
 const mockProps = {
   memo: mockMemo,
-  folders: mockFolders,
   onMemoUpdate: vi.fn()
 }
 

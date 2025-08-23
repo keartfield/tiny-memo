@@ -183,7 +183,7 @@ describe('FolderApi - 並び替え機能', () => {
   describe('並行実行の処理', () => {
     it('複数のreorderFolders呼び出しが並行して実行される', async () => {
       mockElectronAPI.folders.reorderFolders.mockImplementation(
-        (ids: string[]) => new Promise(resolve => setTimeout(() => resolve(undefined), 10))
+        (_ids: string[]) => new Promise(resolve => setTimeout(() => resolve(undefined), 10))
       )
 
       const promises = [

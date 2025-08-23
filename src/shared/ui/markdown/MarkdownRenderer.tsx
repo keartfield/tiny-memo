@@ -1,23 +1,14 @@
 import React from 'react'
-import { CodeBlockParser, CodeBlockParserResult } from './parsers/CodeBlockParser'
-import { TableParser, TableParserResult } from './parsers/TableParser'
-import { HeadingParser, HeadingParserResult } from './parsers/HeadingParser'
-import { ListParser, ListParserResult } from './parsers/ListParser'
-import { BlockquoteParser, BlockquoteParserResult } from './parsers/BlockquoteParser'
-import { HorizontalRuleParser, HorizontalRuleParserResult } from './parsers/HorizontalRuleParser'
-import { ChecklistParser, ChecklistParserResult } from './parsers/ChecklistParser'
+import { CodeBlockParser } from './parsers/CodeBlockParser'
+import { TableParser } from './parsers/TableParser'
+import { HeadingParser } from './parsers/HeadingParser'
+import { ListParser } from './parsers/ListParser'
+import { BlockquoteParser } from './parsers/BlockquoteParser'
+import { HorizontalRuleParser } from './parsers/HorizontalRuleParser'
+import { ChecklistParser } from './parsers/ChecklistParser'
 import { LinkParser } from './parsers/LinkParser'
 import { ImageParser } from './parsers/ImageParser'
 import { TextStyleParser } from './parsers/TextStyleParser'
-
-type ParseResult = 
-  | CodeBlockParserResult 
-  | TableParserResult 
-  | HeadingParserResult 
-  | ListParserResult 
-  | BlockquoteParserResult 
-  | HorizontalRuleParserResult
-  | ChecklistParserResult
 
 interface MarkdownRendererProps {
   content: string
@@ -27,8 +18,8 @@ interface MarkdownRendererProps {
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
-  imageCache,
-  getImageSrc
+  imageCache = new Map(),
+  getImageSrc = async () => ''
 }) => {
   if (!content) return null
 
