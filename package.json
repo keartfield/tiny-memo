@@ -47,7 +47,7 @@
     "electron-builder": "^26.0.12",
     "esbuild": "^0.25.8",
     "jsdom": "^26.0.0",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.2",
     "vite": "^7.0.6",
     "vitest": "^3.2.4",
     "wait-on": "^8.0.4"
@@ -95,7 +95,9 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
         }
       ],
       "mergeASARs": false,
