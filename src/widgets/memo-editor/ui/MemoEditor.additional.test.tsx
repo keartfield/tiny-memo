@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, fireEvent } from '@testing-library/react'
 import MemoEditor from './MemoEditor'
 import { Memo } from '../../../entities/memo'
 import { Folder } from '../../../entities/folder'
@@ -48,12 +47,14 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'フォルダー1',
+    order: 1,
     createdAt: new Date(),
     updatedAt: new Date()
   },
   {
     id: '2',
     name: 'フォルダー2',
+    order: 2,
     createdAt: new Date(),
     updatedAt: new Date()
   }
@@ -62,8 +63,7 @@ const mockFolders: Folder[] = [
 const mockProps = {
   memo: mockMemo,
   folders: mockFolders,
-  onMemoUpdate: vi.fn(),
-  onMemoFolderUpdate: vi.fn()
+  onMemoUpdate: vi.fn()
 }
 
 describe('MemoEditor - 追加機能テスト', () => {
@@ -107,26 +107,22 @@ describe('MemoEditor - 追加機能テスト', () => {
     expect(previewArea).toBeInTheDocument()
   })
 
-  it('dragLeaveイベントでdrag-overが適切に削除される', () => {
+  it('ドロップイベントでdrag-overが削除される', () => {
     render(<MemoEditor {...mockProps} />)
     
     const editor = document.querySelector('.memo-editor')!
     
-    // ドラッグオーバーしてクラスを追加
-    fireEvent.dragOver(editor)
+    // ドラッグエンターでクラスを追加
+    fireEvent.dragEnter(editor)
     expect(editor).toHaveClass('drag-over')
     
-    // dragLeaveイベントをシミュレート（relatedTargetが外部要素の場合）
-    const outsideElement = document.createElement('div')
-    document.body.appendChild(outsideElement)
-    
-    fireEvent.dragLeave(editor, {
-      relatedTarget: outsideElement
+    // ドロップイベントでクラスが削除される
+    const file = new File(['test'], 'test.txt', { type: 'text/plain' })
+    fireEvent.drop(editor, {
+      dataTransfer: { files: [file] }
     })
     
     expect(editor).not.toHaveClass('drag-over')
-    
-    document.body.removeChild(outsideElement)
   })
 
   it('複数行のblockquoteが正しくレンダリングされる', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MemoEditor from './MemoEditor'
 import { Memo } from '../../../entities/memo'
@@ -40,8 +40,7 @@ Object.defineProperty(window, 'electronAPI', {
 const mockProps = {
   memo: mockMemo,
   folders: mockFolders,
-  onMemoUpdate: vi.fn(),
-  onMemoFolderUpdate: vi.fn()
+  onMemoUpdate: vi.fn()
 }
 
 describe('MemoEditor - 自動保存テスト', () => {
@@ -61,8 +60,6 @@ describe('MemoEditor - 自動保存テスト', () => {
       // テキストエディターが表示される
       expect(screen.getByRole('textbox')).toBeInTheDocument()
       
-      // フォルダー選択が表示される
-      expect(screen.getByDisplayValue('No Folder')).toBeInTheDocument()
     })
 
     it('テキスト変更が正しく反映される', async () => {
@@ -141,49 +138,4 @@ describe('MemoEditor - 自動保存テスト', () => {
     })
   })
 
-  describe('フォルダー変更機能', () => {
-    it('フォルダー選択の変更が正しく動作する', async () => {
-      const onMemoFolderUpdate = vi.fn().mockResolvedValue({})
-      
-      const props = {
-        ...mockProps,
-        onMemoFolderUpdate
-      }
-      
-      render(<MemoEditor {...props} />)
-      
-      const folderSelect = screen.getByDisplayValue('No Folder')
-      
-      // フォルダーを選択
-      fireEvent.change(folderSelect, { target: { value: '1' } })
-      
-      // フォルダー更新が呼ばれることを確認
-      expect(onMemoFolderUpdate).toHaveBeenCalledWith('1', '1')
-    })
-
-    it('「No Folder」の選択が正しく動作する', async () => {
-      const memoWithFolder: Memo = {
-        ...mockMemo,
-        folderId: '1'
-      }
-      
-      const onMemoFolderUpdate = vi.fn().mockResolvedValue({})
-      
-      const props = {
-        ...mockProps,
-        memo: memoWithFolder,
-        onMemoFolderUpdate
-      }
-      
-      render(<MemoEditor {...props} />)
-      
-      const folderSelect = screen.getByDisplayValue('フォルダー1')
-      
-      // 「No Folder」を選択
-      fireEvent.change(folderSelect, { target: { value: '' } })
-      
-      // フォルダー更新が呼ばれることを確認（nullでフォルダーなしに設定）
-      expect(onMemoFolderUpdate).toHaveBeenCalledWith('1', null)
-    })
-  })
 })
