@@ -17,6 +17,7 @@ const mockFolders: Folder[] = [
   {
     id: '1',
     name: 'フォルダー1',
+    order: 1,
     createdAt: new Date(),
     updatedAt: new Date()
   }

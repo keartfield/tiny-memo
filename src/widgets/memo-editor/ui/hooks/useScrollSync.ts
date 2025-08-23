@@ -1,9 +1,9 @@
 import { useEffect, useRef, RefObject } from 'react'
 
 interface UseScrollSyncProps {
-  editorRef: RefObject<HTMLDivElement>
-  previewRef: RefObject<HTMLDivElement>
-  markdownPreviewRef: RefObject<HTMLDivElement>
+  editorRef: RefObject<HTMLDivElement | null>
+  previewRef: RefObject<HTMLDivElement | null>
+  markdownPreviewRef: RefObject<HTMLDivElement | null>
 }
 
 export const useScrollSync = ({ editorRef, previewRef, markdownPreviewRef }: UseScrollSyncProps) => {

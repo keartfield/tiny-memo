@@ -19,10 +19,9 @@ interface MemoEditorProps {
   memo: Memo | null
   folders: Folder[]
   onMemoUpdate: (id: string, content: string) => Promise<void>
-  onMemoFolderUpdate: (id: string, folderId: string | null) => void
 }
 
-const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, onMemoFolderUpdate }) => {
+const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate }) => {
   const editorRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const markdownPreviewRef = useRef<HTMLDivElement>(null)
@@ -68,14 +67,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
     onContentChange: handleContentChange, 
     processImagePaste 
   })
-
-  // フォルダ変更ハンドラー
-  const handleFolderChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (memo) {
-      const folderId = e.target.value || null
-      onMemoFolderUpdate(memo.id, folderId)
-    }
-  }, [memo, onMemoFolderUpdate])
 
   // リサイズハンドラー
   const handleResize = useCallback((width: number) => {
@@ -150,19 +141,6 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, folders, onMemoUpdate, on
             −
           </button>
         </div>
-        
-        <select
-          className="memo-folder-select"
-          value={memo.folderId || ''}
-          onChange={handleFolderChange}
-        >
-          <option value="">No Folder</option>
-          {folders.map((folder) => (
-            <option key={folder.id} value={folder.id}>
-              {folder.name}
-            </option>
-          ))}
-        </select>
 
         {(isSaving || isModified) && (
           <div className="memo-status">

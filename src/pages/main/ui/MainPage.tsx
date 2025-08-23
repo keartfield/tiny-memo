@@ -117,7 +117,6 @@ const MainPage: React.FC = () => {
             memo={selectedMemo}
             folders={folders}
             onMemoUpdate={handleMemoUpdate}
-            onMemoFolderUpdate={handleMemoFolderUpdate}
           />
         </div>
       </div>
