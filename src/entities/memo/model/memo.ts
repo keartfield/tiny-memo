@@ -6,14 +6,13 @@ import { Memo } from './types'
  * @returns The extracted title
  */
 export function getMemoTitle(memo: Memo): string {
-  if (!memo.content || memo.content.trim() === '') {
-    return 'Untitled'
+  if (memo.content || memo.content.trim() !== '') {
+    const firstLine = memo.content.split('\n')[0].trim()
+    const cleanTitle = firstLine.replace(/^#+\s*/, '')
+    
+    return cleanTitle
   }
-  
-  const firstLine = memo.content.split('\n')[0].trim()
-  const cleanTitle = firstLine.replace(/^#+\s*/, '')
-  
-  return cleanTitle || 'Untitled'
+  return ''
 }
 
 /**

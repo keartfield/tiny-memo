@@ -73,12 +73,14 @@ const MemoList: React.FC<MemoListProps> = ({
     }
   }
 
-  const getPreviewText = (content: string) => {
-    return content
+  const getPreviewText = (memo: Memo) => {
+    const title = getMemoTitle(memo)
+    return memo.content
       .replace(/^#+ /, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
       .replace(/`(.*?)`/g, '$1')
+      .replace(new RegExp(`^${title}`, 'm'), '')
       .trim()
   }
 
@@ -136,9 +138,9 @@ const MemoList: React.FC<MemoListProps> = ({
               draggable={true}
               onDragStart={(e) => handleDragStart(e, memo)}
             >
-              <div className="memo-title">{getMemoTitle(memo)}</div>
+              <div className="memo-title">{getMemoTitle(memo) || 'Untitled'}</div>
               <div className="memo-preview">
-                {getPreviewText(memo.content)}
+                {getPreviewText(memo)}
               </div>
               <div className="memo-meta">
                 <span className="memo-date">

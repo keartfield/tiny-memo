@@ -36,36 +36,36 @@ describe('getMemoTitle', () => {
     expect(getMemoTitle(memo)).toBe('普通のテキスト')
   })
 
-  it('空のコンテンツの場合、"Untitled"を返す', () => {
+  it('空のコンテンツの場合、空文字を返す', () => {
     const memo = createMockMemo({
       content: ''
     })
     
-    expect(getMemoTitle(memo)).toBe('Untitled')
+    expect(getMemoTitle(memo)).toBe('')
   })
 
-  it('空白のみのコンテンツの場合、"Untitled"を返す', () => {
+  it('空白のみのコンテンツの場合、空文字を返す', () => {
     const memo = createMockMemo({
       content: '   \n  \n  '
     })
     
-    expect(getMemoTitle(memo)).toBe('Untitled')
+    expect(getMemoTitle(memo)).toBe('')
   })
 
-  it('最初の行が空の場合、"Untitled"を返す', () => {
+  it('最初の行が空の場合、空文字を返す', () => {
     const memo = createMockMemo({
       content: '\n\n実際の内容'
     })
     
-    expect(getMemoTitle(memo)).toBe('Untitled')
+    expect(getMemoTitle(memo)).toBe('')
   })
 
-  it('見出し記法のみの場合、"Untitled"を返す', () => {
+  it('見出し記法のみの場合、空文字を返す', () => {
     const memo = createMockMemo({
       content: '###\n\n内容'
     })
     
-    expect(getMemoTitle(memo)).toBe('Untitled')
+    expect(getMemoTitle(memo)).toBe('')
   })
 })
 
