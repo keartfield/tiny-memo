@@ -76,10 +76,25 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onMemoUpdate }) => {
 
   // 画像ソース取得関数
   const getImageSrc = useCallback(async (filename: string): Promise<string> => {
-    const cachedImage = imageCache.get(filename)
+    // cache://プロトコルの場合は、プロトコル部分を除いてキャッシュから取得
+    const cleanFilename = filename.replace(/^cache:\/\//, '')
+    const cachedImage = imageCache.get(cleanFilename)
     if (cachedImage) {
       return cachedImage
     }
+    
+    // image://プロトコルの場合は、Electron APIを使用して画像を取得
+    if (filename.startsWith('image://')) {
+      try {
+        const imageData = await window.electronAPI?.images?.get(filename.replace(/^image:\/\//, ''))
+        if (imageData) {
+          return `data:image/png;base64,${imageData}`
+        }
+      } catch (error) {
+        console.error('Failed to load image from Electron API:', error)
+      }
+    }
+    
     // フォールバック用のデフォルト画像
     return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxNiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2U8L3RleHQ+Cjwvc3ZnPg=='
   }, [imageCache])

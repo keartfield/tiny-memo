@@ -20,7 +20,7 @@ export const useImageHandling = (): UseImageHandlingReturn => {
       const [fullMatch, altText, base64Data] = match
       const imageKey = `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       
-      // キャッシュに保存
+      // キャッシュに保存（プロトコル部分なしのキーを使用）
       setImageCache(prev => new Map(prev.set(imageKey, `data:image/png;base64,${base64Data}`)))
       
       // マークダウンを置き換え
@@ -53,7 +53,7 @@ export const useImageHandling = (): UseImageHandlingReturn => {
           if (result) {
             const imageKey = `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             
-            // キャッシュに保存
+            // キャッシュに保存（プロトコル部分なしのキーを使用）
             setImageCache(prev => new Map(prev.set(imageKey, result)))
             
             // マークダウン形式で挿入テキストに追加

@@ -10,13 +10,14 @@ export interface ImageMatch {
 export class ImageParser {
   static parseInline(text: string): ImageMatch[] {
     const matches: ImageMatch[] = []
-    const regex = /!\[([^\]]*)\]\(image:\/\/([^)]+)\)/g
+    // cache://とimage://の両方のプロトコルを検出
+    const regex = /!\[([^\]]*)\]\((cache:\/\/|image:\/\/)([^)]+)\)/g
     let match
 
     while ((match = regex.exec(text)) !== null) {
       matches.push({
         alt: match[1],
-        filename: match[2],
+        filename: match[3], // プロトコル部分を除いたファイル名
         startIndex: match.index,
         endIndex: match.index + match[0].length - 1
       })
@@ -57,13 +58,15 @@ const ImageComponent: React.FC<ImageComponentProps> = React.memo(({
   imageCache, 
   getImageSrc 
 }) => {
-  const cachedSrc = imageCache.get(filename)
+  // cache://プロトコルの場合は、プロトコル部分を除いてキャッシュから取得
+  const cleanFilename = filename.replace(/^cache:\/\//, '')
+  const cachedSrc = imageCache.get(cleanFilename)
   const [imageSrc, setImageSrc] = useState<string>(cachedSrc || '')
   const [loading, setLoading] = useState(!cachedSrc)
   
   useEffect(() => {
-    if (imageCache.has(filename)) {
-      const cached = imageCache.get(filename)!
+    if (imageCache.has(cleanFilename)) {
+      const cached = imageCache.get(cleanFilename)!
       setImageSrc(cached)
       setLoading(false)
       return
@@ -81,7 +84,7 @@ const ImageComponent: React.FC<ImageComponentProps> = React.memo(({
     }
     
     loadImage()
-  }, [filename, imageCache, getImageSrc])
+  }, [filename, cleanFilename, imageCache, getImageSrc])
   
   if (loading) {
     return (
