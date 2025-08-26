@@ -17,7 +17,7 @@ export class ImageParser {
     while ((match = regex.exec(text)) !== null) {
       matches.push({
         alt: match[1],
-        filename: match[3], // プロトコル部分を除いたファイル名
+        filename: match[2] + match[3], // プロトコル部分を含む完全なパス
         startIndex: match.index,
         endIndex: match.index + match[0].length - 1
       })
@@ -58,6 +58,7 @@ const ImageComponent: React.FC<ImageComponentProps> = React.memo(({
   imageCache, 
   getImageSrc 
 }) => {
+  
   // cache://プロトコルの場合は、プロトコル部分を除いてキャッシュから取得
   const cleanFilename = filename.replace(/^cache:\/\//, '')
   const cachedSrc = imageCache.get(cleanFilename)

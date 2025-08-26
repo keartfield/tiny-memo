@@ -86,9 +86,10 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onMemoUpdate }) => {
     // image://プロトコルの場合は、Electron APIを使用して画像を取得
     if (filename.startsWith('image://')) {
       try {
-        const imageData = await window.electronAPI?.images?.get(filename.replace(/^image:\/\//, ''))
+        const imageFilename = filename.replace(/^image:\/\//, '')
+        const imageData = await window.electronAPI?.images?.get(imageFilename)
         if (imageData) {
-          return `data:image/png;base64,${imageData}`
+          return `data:image/jpeg;base64,${imageData}`
         }
       } catch (error) {
         console.error('Failed to load image from Electron API:', error)

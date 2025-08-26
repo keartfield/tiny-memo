@@ -48,16 +48,40 @@ export const useImageHandling = (): UseImageHandlingReturn => {
       const reader = new FileReader()
       
       await new Promise<void>((resolve) => {
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           const result = e.target?.result as string
           if (result) {
-            const imageKey = `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-            
-            // キャッシュに保存（プロトコル部分なしのキーを使用）
-            setImageCache(prev => new Map(prev.set(imageKey, result)))
-            
-            // マークダウン形式で挿入テキストに追加
-            insertText += `![${file.name}](cache://${imageKey})\n`
+            try {
+              // Base64データをUint8Arrayに変換
+              const base64Data = result.split(',')[1]
+              const binaryString = atob(base64Data)
+              const bytes = new Uint8Array(binaryString.length)
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i)
+              }
+              
+              // Electron APIで永続保存
+              const savedFilename = await window.electronAPI?.images?.save(bytes, file.name)
+              if (savedFilename) {
+                // キャッシュにも保存（即座に表示用）
+                setImageCache(prev => new Map(prev.set(savedFilename, result)))
+                
+                // image://プロトコルを使用してマークダウンに追加
+                insertText += `![${file.name}](image://${savedFilename})\n`
+              } else {
+                console.error('Failed to save image via Electron API')
+                // フォールバック: キャッシュのみ使用
+                const imageKey = `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                setImageCache(prev => new Map(prev.set(imageKey, result)))
+                insertText += `![${file.name}](cache://${imageKey})\n`
+              }
+            } catch (error) {
+              console.error('Error saving image:', error)
+              // フォールバック: キャッシュのみ使用
+              const imageKey = `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+              setImageCache(prev => new Map(prev.set(imageKey, result)))
+              insertText += `![${file.name}](cache://${imageKey})\n`
+            }
           }
           resolve()
         }
