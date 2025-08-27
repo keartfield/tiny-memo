@@ -67,12 +67,24 @@ const MemoEditor: React.FC<MemoEditorProps> = ({ memo, onMemoUpdate }) => {
   })
 
   // リサイズハンドラー
-  const handleResize = useCallback((width: number) => {
-    const maxWidth = 80
-    const minWidth = 20
-    const clampedWidth = Math.max(minWidth, Math.min(maxWidth, width))
-    setEditorWidth(clampedWidth)
-  }, [setEditorWidth])
+  const handleResize = useCallback((delta: number) => {
+    setEditorWidth(prevWidth => {
+      // コンテナの実際の幅を取得
+      const container = document.querySelector('.memo-editor-content')
+      const containerWidth = container?.clientWidth || 800
+      
+      // デルタ値をパーセンテージに変換
+      const deltaPercent = (delta / containerWidth) * 100
+      const newWidth = prevWidth + deltaPercent
+      
+      // 20%〜80%の範囲に制限
+      const maxWidth = 80
+      const minWidth = 20
+      const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth))
+      
+      return clampedWidth
+    })
+  }, [])
 
   // 画像ソース取得関数
   const getImageSrc = useCallback(async (filename: string): Promise<string> => {

@@ -7,7 +7,7 @@ interface UseEditorModeReturn {
   setEditorMode: (mode: EditorMode) => void
   toggleEditorMode: () => void
   editorWidth: number
-  setEditorWidth: (width: number) => void
+  setEditorWidth: (width: number | ((prevWidth: number) => number)) => void
 }
 
 export const useEditorMode = (initialMode: EditorMode = 'edit-preview'): UseEditorModeReturn => {
