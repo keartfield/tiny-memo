@@ -87,7 +87,7 @@ export const useAutoSave = ({ memo, onMemoUpdate }: UseAutoSaveProps): UseAutoSa
           setIsSaving(false)
         }
       }
-    }, 1000)
+    }, 300)
 
     return () => clearTimeout(autoSaveTimer)
   }, [memo, content, isModified, isSaving, lastSavedContent])
