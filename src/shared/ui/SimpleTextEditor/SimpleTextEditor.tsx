@@ -45,11 +45,11 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
 
   // コンテンツを更新
   const updateContent = useCallback(() => {
-    if (!editableRef.current || isComposing) return
+    if (!editableRef.current) return
 
     const currentText = extractTextFromHTML(editableRef.current)
     onChange(currentText)
-  }, [extractTextFromHTML, onChange, isComposing])
+  }, [extractTextFromHTML, onChange])
 
   // 入力イベントハンドラー
   const handleInput = useCallback(() => {
@@ -65,7 +65,8 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
 
   const handleCompositionEnd = useCallback(() => {
     setIsComposing(false)
-    setTimeout(updateContent, 0)
+    // 日本語入力確定後は即座にコンテンツを更新
+    updateContent()
   }, [updateContent])
 
   // ペーストイベントハンドラー（プレーンテキストのみ受け入れ）
