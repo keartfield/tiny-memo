@@ -17,15 +17,30 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
   const editableRef = useRef<HTMLDivElement>(null)
   const [isComposing, setIsComposing] = useState(false)
 
-  // HTMLからプレーンテキストを抽出（簡素化版）
+  // HTMLからプレーンテキストを抽出（改行保持版）
   const extractTextFromHTML = useCallback((element: HTMLElement): string => {
-    // innerTextはより正確に改行を保持する
-    let text = element.innerText || ''
-    // テスト環境でのedge caseを処理
-    if (!text && element.textContent) {
-      text = element.textContent.replace(/<br\s*\/?>/gi, '\n')
-    }
-    return text
+    // innerHTMLからbrとdivを改行に変換
+    let html = element.innerHTML
+
+    // より正確な変換：divの内容を改行で区切る
+    html = html.replace(/<div><br><\/div>/gi, '\n')  // 空のdivはそのまま改行
+    html = html.replace(/<div>/gi, '\n')             // divの開始で改行
+    html = html.replace(/<\/div>/gi, '')             // divの終了は削除
+    html = html.replace(/<br\s*\/?>/gi, '\n')        // brタグは改行
+
+    // HTMLタグを除去
+    html = html.replace(/<[^>]*>/g, '')
+
+    // HTMLエンティティをデコード
+    html = html.replace(/&nbsp;/g, ' ')
+    html = html.replace(/&lt;/g, '<')
+    html = html.replace(/&gt;/g, '>')
+    html = html.replace(/&amp;/g, '&')
+
+    // 先頭の余分な改行のみを除去
+    html = html.replace(/^\n/, '')               // 先頭の1つの改行のみを除去
+
+    return html
   }, [])
 
   // コンテンツを更新
@@ -66,30 +81,11 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
       const range = selection.getRangeAt(0)
       range.deleteContents()
       
-      // 改行を含むテキストの場合、BRタグに変換して挿入
-      if (plainText.includes('\n')) {
-        const lines = plainText.split('\n')
-        for (let i = 0; i < lines.length; i++) {
-          if (i > 0) {
-            const br = document.createElement('br')
-            range.insertNode(br)
-            range.setStartAfter(br)
-            range.setEndAfter(br)
-          }
-          if (lines[i]) {
-            const textNode = document.createTextNode(lines[i])
-            range.insertNode(textNode)
-            range.setStartAfter(textNode)
-            range.setEndAfter(textNode)
-          }
-        }
-      } else {
-        // 単一行のテキストの場合
-        const textNode = document.createTextNode(plainText)
-        range.insertNode(textNode)
-        range.setStartAfter(textNode)
-        range.setEndAfter(textNode)
-      }
+      // CSSのwhite-space: pre-wrapにより改行が自動的に保持される
+      const textNode = document.createTextNode(plainText)
+      range.insertNode(textNode)
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode)
       
       selection.removeAllRanges()
       selection.addRange(range)
@@ -102,12 +98,17 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
   // 外部からの値の変更を反映
   useEffect(() => {
     if (!editableRef.current) return
-    
+
     // 現在の内容と異なる場合のみ更新
     const currentContent = extractTextFromHTML(editableRef.current)
-    if (value !== currentContent) {
+
+    // より厳密な比較: 空白文字の正規化後に比較
+    const normalizedValue = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    const normalizedCurrent = currentContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+
+    if (normalizedValue !== normalizedCurrent) {
       // プレーンテキストをHTMLに変換（改行のみ）
-      const html = value.replace(/\n/g, '<br>')
+      const html = normalizedValue.replace(/\n/g, '<br>')
       editableRef.current.innerHTML = html
     }
   }, [value, extractTextFromHTML])
