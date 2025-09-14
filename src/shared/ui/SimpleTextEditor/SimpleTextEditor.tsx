@@ -107,8 +107,10 @@ export const SimpleTextEditor: React.FC<SimpleTextEditorProps> = ({
     const normalizedCurrent = currentContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
 
     if (normalizedValue !== normalizedCurrent) {
-      // プレーンテキストをHTMLに変換（改行のみ）
-      const html = normalizedValue.replace(/\n/g, '<br>')
+      const html = normalizedValue
+        .split('\n')
+        .map(line => line === '' ? '<div><br></div>' : `<div>${line}</div>`)
+        .join('')
       editableRef.current.innerHTML = html
     }
   }, [value, extractTextFromHTML])
